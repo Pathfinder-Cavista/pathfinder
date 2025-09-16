@@ -4,7 +4,11 @@ using Hangfire.MySql;
 using Hangfire.RecurringJobExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
+using PathFinder.Application.Features;
+using PathFinder.Application.Interfaces;
+using PathFinder.Domain.Interfaces;
+using PathFinder.Infrastructure.Persistence;
+using PathFinder.Infrastructure.Repositories;
 using System.Reflection;
 
 namespace PathFinder.API.Extensions
