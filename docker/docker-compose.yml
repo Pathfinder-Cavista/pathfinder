@@ -1,0 +1,42 @@
+version: "3.3"
+
+services:
+  api:
+    build:
+      context: ../backend
+      dockerfile: src/PathFinder.API/Dockerfile
+    container_name: pathfinder-api
+    ports:
+      - "5005:8080"
+      - "5006:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=PathFinderApiDb;User=appuser;Password=YRaUUR76!Whst5qaPO;Allow User Variables=true;
+      - HangfireSettings__Password=JA5p3r!25
+      - HangfireSettings__UserName=hf-admin
+    depends_on:
+      - db
+    networks:
+      - webnet
+
+  db:
+    image: mysql:8.0
+    container_name: pathfinder-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=YRaUUR76!Whst5qaPO
+      - MYSQL_DATABASE=PathFinderApiDb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=YRaUUR76!Whst5qaPO
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - webnet
+
+volumes:
+  mysql-data:
+
+networks:
+  webnet:
