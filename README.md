@@ -6,7 +6,7 @@ This is a lightweight application to automate the tracking of open roles, calcul
 
 ## Running the App
 
-From the `docker` directory (where the `docker-compose.yml` file is location), run:
+From the `docker` directory (where the `docker-compose.yml` file is located), run:
 
 ```bash
 docker-compose up -d db
