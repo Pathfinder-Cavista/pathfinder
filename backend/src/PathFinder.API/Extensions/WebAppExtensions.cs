@@ -1,9 +1,10 @@
 ﻿using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using PathFinder.API.Extensions;
 using PathFinder.API.Filters;
 using PathFinder.Infrastructure.Persistence;
 
-namespace TalentDataTracker.API.Extensions
+namespace PathFinder.API.Extensions
 {
     public static class WebAppExtensions
     {

@@ -3,7 +3,7 @@ using PathFinder.Application.Exceptions;
 using System.Net;
 using System.Text.Json;
 
-namespace TalentDataTracker.API.Extensions
+namespace PathFinder.API.Extensions
 {
     public static class MiddlewareExtensions
     {

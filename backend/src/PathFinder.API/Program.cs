@@ -1,5 +1,4 @@
 using PathFinder.API.Extensions;
-using TalentDataTracker.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
