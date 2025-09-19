@@ -1,0 +1,37 @@
+name: Build, push and deploy Docker image
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  check_merge_condition:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is merged
+        run: |
+          if [ "${{ github.event.pull_request.merged }}" != "true" ]; then
+            echo "PR is not merged. Skipping deployment."
+            exit 1
+          fi
+        shell: bash
+  
+  build_and_push:
+    needs: check_merge_condition
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build \
+          -t pathfinder-api:latest \
+          -f ../backend/src/PathFinder.API/Dockerfile .
+
+      - name: Log in and push to Docker Hub
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/pathfinder-api:latest
