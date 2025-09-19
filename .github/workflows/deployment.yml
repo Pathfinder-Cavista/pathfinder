@@ -28,6 +28,7 @@ jobs:
 
       - name: Build Docker image
         run: docker build \
+          --build-arg BUILD_CONFIGURATION=Release \
           -t pathfinder-api:latest \
           -f ../backend/src/PathFinder.API/Dockerfile .
 
