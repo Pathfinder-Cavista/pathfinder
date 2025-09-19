@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using PathFinder.Application.Commands.Accounts;
-using PathFinder.Domain.Enums;
+using PathFinder.Application.Helpers;
+using System.Text.RegularExpressions;
 
 namespace PathFinder.Application.Validations.Accounts
 {
@@ -15,6 +16,8 @@ namespace PathFinder.Application.Validations.Accounts
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password is required")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters long");
             RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number is required");
+            RuleFor(x => x).Must(args => AccountHelpers.IsAValidPhoneNumber(args.PhoneNumber))
+                .WithMessage("Please enter a valid phone number.");
             RuleFor(x => x.Role).IsInEnum().WithMessage("Please select a valid role");
         }
     }

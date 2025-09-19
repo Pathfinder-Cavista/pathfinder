@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PathFinder.Application.Commands.Accounts;
@@ -67,6 +68,9 @@ namespace PathFinder.Application.Features
 
             var accessToken = CreateAccessToken(user, [.. roles]);
             var refreshToken = await CreateAndSaveRefreshToken(user.Id);
+
+            user.LastLogin = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
             return new TokenDto(accessToken, refreshToken);
         }
 
@@ -112,6 +116,24 @@ namespace PathFinder.Application.Features
             var roles = await _userManager.GetRolesAsync(user);
             var newAccessToken = CreateAccessToken(user, roles.ToArray());
             return new TokenDto(newAccessToken, command.RefreshToken);
+        }
+
+        public async Task<UserBaseDto?> GetLoggedInUserdetails()
+        {
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                throw new ForbiddenException("User not authenticated");
+            }
+
+            var user = await _userManager.Users//.Include(u => u.Talent).Include(u => u.Recruiter)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
+                    throw new NotFoundException("User not found");
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            return roles.Contains(Roles.Talent.GetDescription()) ?
+                TalentInfoDto.ToTalentInfoDto(user, user.Talent) :
+                RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter);
         }
 
         #region Private Methods
@@ -204,7 +226,7 @@ namespace PathFinder.Application.Features
                 return true;
             }
 
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId (_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
             if(string.IsNullOrEmpty(loggedInUserId))
             {
                 return false;

@@ -123,8 +123,9 @@ namespace PathFinder.API.Extensions
                     Description = "JWT Auth. Header using Bearer scheme",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
                 });
 
                 opt.AddSecurityRequirement(new OpenApiSecurityRequirement
