@@ -26,11 +26,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Show repo structure
+        run: ls -R
+
       - name: Build Docker image
-        run: docker buildx build \
-          -f backend/src/PathFinder.API/Dockerfile \
-          -t pathfinder-api:latest \
-          backend/
+        run: docker buildx build -f backend/src/PathFinder.API/Dockerfile -t pathfinder-api:latest backend/
 
       - name: Log in and push to Docker Hub
         run: |
