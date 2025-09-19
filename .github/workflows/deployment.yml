@@ -30,7 +30,7 @@ jobs:
         run: ls -R
 
       - name: Build Docker image
-        run: docker buildx build -f backend/src/PathFinder.API/Dockerfile -t pathfinder-api:latest backend/
+        run: docker buildx build -f backend/src/PathFinder.API/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/pathfinder-api:latest backend/
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
