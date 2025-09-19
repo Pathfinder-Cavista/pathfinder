@@ -30,6 +30,10 @@ namespace PathFinder.API.Extensions
                                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                                 message = contextFeature.Error.Message;
                                 break;
+                            case ForbiddenException:
+                                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                message = contextFeature.Error.Message;
+                                break;
                             default:
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                                 break;

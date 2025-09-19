@@ -2,6 +2,6 @@
 {
     public interface IServiceManager
     {
-        ISampleService Sample {  get; }
+        IAccountService Account {  get; }
     }
 }

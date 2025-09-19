@@ -2,7 +2,7 @@
 {
     public interface IRepositoryManager
     {
-        ISampleRepository Sample { get; }
+        ITokenRepository Token { get; }
         Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }

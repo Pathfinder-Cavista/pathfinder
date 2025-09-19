@@ -14,6 +14,10 @@ services:
       - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=PathFinderApiDb;User=appuser;Password=YRaUUR76!Whst5qaPO;Allow User Variables=true;
       - HangfireSettings__Password=JA5p3r!25
       - HangfireSettings__UserName=hf-admin
+      - JwtSettings__PrivateKey=d54098cbQ8eb5R4a53S8498T5004611355bd
+      - JwtSettings__Issuer=http://localhost:5005
+      - JwtSettings__Audience=pathfinder-talent-data-tracker
+      - JwtSettings__Expires=1
     depends_on:
       - db
     networks:

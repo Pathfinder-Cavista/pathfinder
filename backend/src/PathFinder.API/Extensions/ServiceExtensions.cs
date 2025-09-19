@@ -2,14 +2,20 @@
 using Hangfire.Console;
 using Hangfire.MySql;
 using Hangfire.RecurringJobExtensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PathFinder.Application.Features;
 using PathFinder.Application.Interfaces;
+using PathFinder.Application.Settings;
+using PathFinder.Domain.Entities;
 using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
 using PathFinder.Infrastructure.Repositories;
 using System.Reflection;
+using System.Text;
 
 namespace PathFinder.API.Extensions
 {
@@ -25,7 +31,8 @@ namespace PathFinder.API.Extensions
                 .RegisterDbContext(connectionString)
                 .RegisterRepository()
                 .RegisterServices()
-                .ConfigureSwaggerDocs();
+                .ConfigureSwaggerDocs()
+                .ConfigureJwt(configuration);
         }
 
         private static IServiceCollection ConfigureHangfire(this IServiceCollection services,
@@ -77,6 +84,17 @@ namespace PathFinder.API.Extensions
                     ServerVersion.AutoDetect(connectionString),
                     m => m.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
+            services.AddIdentity<AppUser, IdentityRole>(options =>
+            {
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
+            }).AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
             return services;
         }
 
@@ -124,6 +142,38 @@ namespace PathFinder.API.Extensions
                     }
                 });
             });
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureJwt(this IServiceCollection services,
+                                                       IConfiguration configuration)
+        {
+            var jwtSection = configuration.GetSection("JwtSettings");
+            services.Configure<JwtSettings>(jwtSection);
+            var settings = jwtSection.Get<JwtSettings>() ?? 
+                throw new ArgumentNullException("JwtSettings");
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = settings.Issuer,
+
+                    ValidateAudience = true,
+                    ValidAudience = settings.Audience,
+
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.PrivateKey))
+                };
+            });
+
+            services.AddAuthorization();
 
             return services;
         }

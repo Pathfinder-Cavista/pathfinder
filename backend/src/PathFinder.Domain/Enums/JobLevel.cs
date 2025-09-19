@@ -1,0 +1,13 @@
+﻿namespace PathFinder.Domain.Enums
+{
+    public enum JobLevel
+    {
+        Entry,
+        Junior,
+        Mid,
+        Senior,
+        Lead,
+        Manager,
+        Director
+    }
+}
