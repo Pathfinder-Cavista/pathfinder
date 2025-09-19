@@ -40,3 +40,7 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/pathfinder-api:latest
+
+      - name: Deploy to Render
+        run: |
+          curl -X POST ${{ secrets.DEPLOY_HOOK_URL }}
