@@ -126,8 +126,7 @@ namespace PathFinder.Application.Features
                 throw new ForbiddenException("User not authenticated");
             }
 
-            var user = await _userManager.Users//.Include(u => u.Talent).Include(u => u.Recruiter)
-                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
+            var user = await _userManager.FindByIdAsync(loggedInUserId) ??
                     throw new NotFoundException("User not found");
             
             var roles = await _userManager.GetRolesAsync(user);
