@@ -6,7 +6,6 @@
         public string? Address { get; set; } = string.Empty;
         public string? ResumeUrl { get; set; } = string.Empty;
         public string? Summary { get; set; } = string.Empty;
-        public ICollection<string> Skills { get; set; } = [];
 
         // Nav. properties
         public string UserId { get; set; } = string.Empty;

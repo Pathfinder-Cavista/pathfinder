@@ -1,10 +1,11 @@
 ﻿using Hangfire;
 using Hangfire.Console;
-using Hangfire.MySql;
+using Hangfire.PostgreSql;
 using Hangfire.RecurringJobExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PathFinder.Application.Features;
@@ -29,8 +30,8 @@ namespace PathFinder.API.Extensions
 
             services.ConfigureHangfire(configuration)
                 .RegisterDbContext(connectionString)
-                .RegisterRepository()
-                .RegisterServices()
+                .AddScoped<IRepositoryManager, RepositoryManager>()
+                .AddScoped<IServiceManager, ServiceManager>()
                 .ConfigureSwaggerDocs()
                 .ConfigureJwt(configuration);
         }
@@ -38,38 +39,28 @@ namespace PathFinder.API.Extensions
         private static IServiceCollection ConfigureHangfire(this IServiceCollection services,
                                                             IConfiguration configuration)
         {
-            services.AddHangfire((provider, config) =>
+            services.AddHangfire(config =>
             {
-                config
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseStorage(new MySqlStorage(configuration.GetConnectionString("DefaultConnection"), new MySqlStorageOptions
-                {
-                    QueuePollInterval = TimeSpan.FromSeconds(10),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                    CountersAggregateInterval = TimeSpan.FromMinutes(5),
-                    PrepareSchemaIfNecessary = true,
-                    DashboardJobListLimit = 25000,
-                    TransactionTimeout = TimeSpan.FromMinutes(1),
-                    TablesPrefix = "Hangfire",
-                }))
-
-                .WithJobExpirationTimeout(TimeSpan.FromHours(6))
-                .UseConsole()
-                .UseRecurringJob(typeof(IRecurringJobService))
-                .UseFilter(new AutomaticRetryAttribute()
-                {
-                    Attempts = 5,
-                    DelayInSecondsByAttemptFunc = _ => 30
-                });
-            })
-            .AddHangfireServer(options => // Configure Hangfire server
+                config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UsePostgreSqlStorage(opt =>
+                    {
+                        opt.UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"));
+                    })
+                    .UseConsole()
+                    .UseRecurringJob(typeof(IRecurringJobService))
+                    .UseFilter(new AutomaticRetryAttribute()
+                    {
+                        Attempts = 5,
+                        DelayInSecondsByAttemptFunc = _ => 30
+                    });
+            }).AddHangfireServer(opt =>
             {
-                options.ServerName = "Hangfire Background Jobs Server";
-                options.Queues = new[] { "recurring", "default" };
-                options.SchedulePollingInterval = TimeSpan.FromMinutes(1);
-                options.WorkerCount = 5;
+                opt.ServerName = "Hangfire Background Jobs Server";
+                opt.Queues = new[] { "recurring", "default" };
+                opt.SchedulePollingInterval = TimeSpan.FromMinutes(1);
+                opt.WorkerCount = 5;
             });
 
             return services;
@@ -79,10 +70,8 @@ namespace PathFinder.API.Extensions
                                                            string connectionString)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(
-                    connectionString,
-                    ServerVersion.AutoDetect(connectionString),
-                    m => m.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+                options.UseNpgsql(connectionString,
+                     m => m.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
             services.AddIdentity<AppUser, IdentityRole>(options =>
             {
@@ -95,18 +84,6 @@ namespace PathFinder.API.Extensions
             }).AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            return services;
-        }
-
-        private static IServiceCollection RegisterRepository(this IServiceCollection services)
-        {
-            services.AddScoped<IRepositoryManager, RepositoryManager>();
-            return services;
-        }
-
-        private static IServiceCollection RegisterServices(this IServiceCollection services)
-        {
-            services.AddScoped<IServiceManager, ServiceManager>();
             return services;
         }
 
