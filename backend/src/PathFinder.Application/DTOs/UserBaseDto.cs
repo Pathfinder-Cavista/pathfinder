@@ -36,7 +36,6 @@ namespace PathFinder.Application.DTOs
                 info.Address = profile.Address;
                 info.ResumeUrl = profile.ResumeUrl;
                 info.CareerSummary = profile.Summary;
-                info.Skills = [.. profile.Skills];
             }
 
             return info;

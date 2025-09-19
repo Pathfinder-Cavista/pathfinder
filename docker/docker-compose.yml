@@ -11,7 +11,7 @@ services:
       - "5006:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=PathFinderApiDb;User=appuser;Password=YRaUUR76!Whst5qaPO;Allow User Variables=true;
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=PathFinderApiDb;Username=appuser;Password=YRaUUR76!Whst5qaPO;
       - HangfireSettings__Password=JA5p3r!25
       - HangfireSettings__UserName=hf-admin
       - JwtSettings__PrivateKey=d54098cbQ8eb5R4a53S8498T5004611355bd
@@ -39,8 +39,23 @@ services:
     networks:
       - webnet
 
+  postgres:
+    image: postgres:16
+    container_name: pathfinder-postgres
+    environment:
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=YRaUUR76!Whst5qaPO
+      - POSTGRES_DB=PathFinderApiDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - webnet
+
 volumes:
   mysql-data:
+  pgdata:
 
 networks:
   webnet:

@@ -14,7 +14,6 @@ namespace PathFinder.Domain.Entities
         public EmploymentType EmploymentType { get; set; }
         public JobLevel Level { get; set; }
         public string? Location { get; set; }
-        public ICollection<string> RequiredSkills { get; set; } = [];
 
         // Nav. properties
         public string PostedByUserId { get; set; } = string.Empty;
