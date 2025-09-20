@@ -32,7 +32,8 @@ namespace PathFinder.API.Extensions
                 .AddScoped<IRepositoryManager, RepositoryManager>()
                 .AddScoped<IServiceManager, ServiceManager>()
                 .ConfigureSwaggerDocs()
-                .ConfigureJwt(configuration);
+                .ConfigureJwt(configuration)
+                .ConfigureCors();
         }
 
         private static IServiceCollection ConfigureHangfire(this IServiceCollection services,
@@ -153,6 +154,19 @@ namespace PathFinder.API.Extensions
             });
 
             services.AddAuthorization();
+
+            return services;
+        }
+
+        public static IServiceCollection ConfigureCors(this IServiceCollection services)
+        {
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsPolicy", b =>
+                    b.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+            });
 
             return services;
         }
