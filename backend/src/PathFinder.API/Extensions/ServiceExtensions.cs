@@ -146,6 +146,8 @@ namespace PathFinder.API.Extensions
                     ValidateAudience = true,
                     ValidAudience = settings.Audience,
 
+                    ValidateLifetime = true,
+
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.PrivateKey))
                 };

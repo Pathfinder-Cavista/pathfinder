@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PathFinder.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PathFinder.Infrastructure.Persistence;
 namespace PathFinder.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919222323_Normalized_Skills")]
+    partial class Normalized_Skills
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,21 +54,21 @@ namespace PathFinder.Infrastructure.Migrations
                         new
                         {
                             Id = "665376b2-6d04-42d6-95a8-4a14e1819649",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/19/2025 10:23:22 PM",
                             Name = "Talent",
                             NormalizedName = "TALENT"
                         },
                         new
                         {
                             Id = "e6a2221f-9e15-4474-9264-73a76447849e",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/19/2025 10:23:22 PM",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "b35f5379-539e-413c-8ebc-e407fdf705c2",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/19/2025 10:23:22 PM",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -237,9 +240,6 @@ namespace PathFinder.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ProfilePhoto")
-                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

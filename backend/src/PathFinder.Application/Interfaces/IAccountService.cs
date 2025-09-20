@@ -9,5 +9,7 @@ namespace PathFinder.Application.Interfaces
         Task<TokenDto> LoginAsync(LoginCommand command);
         Task<TokenDto> RefreshTokenAsync(RefreshTokenCommand command);
         Task<RegisterDto> RegisterAsync(RegisterCommand command);
+        Task<SuccessResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command);
+        Task<SuccessResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command);
     }
 }

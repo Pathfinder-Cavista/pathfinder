@@ -35,5 +35,24 @@ namespace PathFinder.API.Mappers
                 RefreshToken = request.Token
             };
         }
+
+        public static RecruiterProfileUpdateCommand ToProfileUpdateCommand(RecruiterProfileUpdateRequest request)
+        {
+            return new RecruiterProfileUpdateCommand
+            {
+                Title = request.ProfileTitle
+            };
+        }
+
+        public static TalentProfileUpdateCommand ToProfileUpdateCommand(TalentProfileUpdateRequest request)
+        {
+            return new TalentProfileUpdateCommand
+            {
+                Address = request.HomeAddress,
+                Location = request.City,
+                ProfileSummary = request.CareerSummary,
+                Skills = request.ProfileSkills
+            };
+        }
     }
 }

@@ -25,6 +25,17 @@ namespace PathFinder.Infrastructure.Repositories
             }
         }
 
+        public async Task InsertRangeAsync(List<T> entity,
+                                      bool saveNow = true,
+                                      CancellationToken cancellation = default)
+        {
+            await _dbContext.AddRangeAsync(entity, cancellation);
+            if (saveNow)
+            {
+                await _dbContext.SaveChangesAsync(cancellation);
+            }
+        }
+
         public async Task UpdateAsync(T entity,
                                       bool saveNow = true,
                                       CancellationToken cancellation = default)
@@ -47,6 +58,17 @@ namespace PathFinder.Infrastructure.Repositories
             }
         }
 
+        public async Task DeleteRangeAsync(List<T> entity,
+                                      bool saveNow = true,
+                                      CancellationToken cancellation = default)
+        {
+            _dbContext.RemoveRange(entity);
+            if (saveNow)
+            {
+                await _dbContext.SaveChangesAsync(cancellation);
+            }
+        }
+
         public IQueryable<T> GetAsQueryable(Expression<Func<T, bool>> expression)
         {
             return _dbContext.Set<T>()
@@ -54,7 +76,7 @@ namespace PathFinder.Infrastructure.Repositories
                 .Where(expression);
         }
 
-        public async Task<T?> FindAsync(Expression<Func<T, bool>> expression,
+        public async Task<T?> FindOneAsync(Expression<Func<T, bool>> expression,
                                         bool trackChanges = false,
                                         CancellationToken cancellation = default)
         {

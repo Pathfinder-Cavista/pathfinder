@@ -19,5 +19,6 @@ namespace PathFinder.Domain.Entities
         public string PostedByUserId { get; set; } = string.Empty;
         public RecruiterProfile? PostedBy { get; set; }
         public ICollection<JobApplication> Applications { get; set; } = [];
+        public ICollection<JobSkill> RequiredSkills { get; set; } = [];
     }
 }
