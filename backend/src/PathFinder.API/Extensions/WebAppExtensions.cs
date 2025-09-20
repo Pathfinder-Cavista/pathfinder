@@ -7,8 +7,6 @@ using PathFinder.Application.Helpers;
 using PathFinder.Application.Mappers;
 using PathFinder.Domain.Entities;
 using PathFinder.Infrastructure.Persistence;
-using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace PathFinder.API.Extensions
 {

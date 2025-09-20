@@ -23,7 +23,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseHangfireDashboard(builder.Configuration)
-    .RunMigrations();
+    .RunMigrations(true);
 await app.SeedInitialDataAsync(logger);
 
 app.MapControllers();
