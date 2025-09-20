@@ -33,8 +33,7 @@ namespace PathFinder.API.Extensions
                 .AddScoped<IServiceManager, ServiceManager>()
                 .ConfigureSwaggerDocs()
                 .ConfigureJwt(configuration)
-                .ConfigureCors();
-        }
+                .ConfigureCors();        }
 
         private static IServiceCollection ConfigureHangfire(this IServiceCollection services,
                                                             IConfiguration configuration)
