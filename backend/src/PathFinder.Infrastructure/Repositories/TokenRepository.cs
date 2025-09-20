@@ -17,7 +17,7 @@ namespace PathFinder.Infrastructure.Repositories
 
         public async Task<RefreshToken?> GetAsync(Expression<Func<RefreshToken, bool>> predicate, bool track = false)
         {
-            return await FindAsync(predicate, track);
+            return await FindOneAsync(predicate, track);
         }
     }
 }

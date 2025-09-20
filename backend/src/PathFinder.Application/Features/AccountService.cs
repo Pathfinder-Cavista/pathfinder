@@ -105,7 +105,6 @@ namespace PathFinder.Application.Features
 
             
             await AddTalentOrRecruiterProfile(user, new List<string> { command.Role.GetDescription() });
-            await _repository.SaveAsync();
             return RegisterDto.FromEntity(user);
         }
 
@@ -138,32 +137,176 @@ namespace PathFinder.Application.Features
             
             var roles = await _userManager.GetRolesAsync(user);
             await AddTalentOrRecruiterProfile(user, roles.ToList());
-            return roles.Contains(Roles.Talent.GetDescription()) ?
-                TalentInfoDto.ToTalentInfoDto(user, user.Talent) :
-                RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter);
+            if (roles.Contains(Roles.Talent.GetDescription()))
+            {
+                var info = TalentInfoDto.ToTalentInfoDto(user, user.Talent);
+                if(user.Talent != null)
+                {
+                    var skills = await _repository.Skill
+                        .GetTalentSkillsAsync(s => s.TalentProfileId == user.Talent.Id && s.Skill != null);
+
+                    skills.ForEach(ts =>
+                    {
+                        if(ts.Skill != null)
+                        {
+                            info.Skills.Add(ts.Skill.Name);
+                        }
+                    });
+                }
+
+                return info;
+            }
+            else
+            {
+                return RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter);
+            }
+        }
+
+        public async Task<SuccessResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command)
+        {
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                throw new ForbiddenException("User not authenticated");
+            }
+
+            var user = await _userManager.Users
+                .Include(u => u.Recruiter)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
+                    throw new NotFoundException("User not found");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (!roles.Contains(Roles.Admin.GetDescription()) && !roles.Contains(Roles.Manager.GetDescription()))
+            {
+                throw new ForbiddenException("You have no permission to perform this operation");
+            }
+
+            user.Recruiter ??= new RecruiterProfile
+                {
+                    UserId = loggedInUserId,
+                    Title = command.Title,
+                };
+            
+            user.Recruiter.Title = command.Title;
+            await _userManager.UpdateAsync(user);
+
+            return new SuccessResponse("Profile successfully updated");
+        }
+
+        public async Task<SuccessResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command)
+        {
+            var validator = new TalentProfileUpdateCommandValidator().Validate(command);
+            if (!validator.IsValid)
+            {
+                throw new BadRequestException(validator.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid inputs");
+            }
+
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                throw new ForbiddenException("User not authenticated");
+            }
+
+            var user = await _userManager.Users
+                //.Include(u => u.Talent)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
+                    throw new NotFoundException("User not found");
+
+            var isATalent = await _userManager.IsInRoleAsync(user, Roles.Talent.GetDescription());
+            if (!isATalent)
+            {
+                throw new ForbiddenException("You have no permission to perform this operation");
+            }
+
+            var talentProfile = await _repository.TalentProfile
+                .GetAsync(p => p.UserId == loggedInUserId, true);
+
+            if(talentProfile == null)
+            {
+                talentProfile = new TalentProfile
+                {
+                    Location = command.Location,
+                    Address = command.Address,
+                    Summary = command.ProfileSummary,
+                    UserId = loggedInUserId
+                };
+            }
+
+            talentProfile.Location = command.Location;
+            talentProfile.Address = command.Address;
+            talentProfile.Summary = command.ProfileSummary;
+            await _userManager.UpdateAsync(user);
+            await _repository.SaveAsync();
+
+            await HandleSkillsUpdate(talentProfile, command.Skills);
+            return new SuccessResponse("Profile successfully updated");
         }
 
         #region Private Methods
+        public async Task HandleSkillsUpdate(TalentProfile talent, ICollection<string> talentSkills)
+        {
+            var normalizedNames = talentSkills.Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var existingSkills = await _repository.Skill
+                .AsQueryable(s => normalizedNames.Contains(s.Name))
+                .ToListAsync();
+
+            var missingNames = normalizedNames
+                .Except(existingSkills.Select(s => s.Name), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var newSkills = missingNames.Select(name => new Skill
+            {
+                Name = name.CapitalizeFirstLetterOnly(),
+            }).ToList();
+
+            await _repository.Skill.AddRangeAsync(newSkills);
+
+            var allSkills = existingSkills.Concat(newSkills).ToList();
+            var userExistingSkills = await _repository.TalentSkill
+                .GetAsync(s => allSkills.Select(i => i.Id).Contains(s.SkillId));
+
+            allSkills.RemoveAll(s => userExistingSkills.Select(s => s.SkillId).Contains(s.Id));
+            var skillsToAdd = new List<TalentSkill>();
+
+            foreach (var skill in allSkills)
+            {
+                skillsToAdd.Add(new TalentSkill
+                {
+                    TalentProfileId = talent.Id,
+                    SkillId = skill.Id,
+                });
+            }
+
+            await _repository.TalentSkill.AddRangeAsync(skillsToAdd, false);
+            await _repository.SaveAsync();
+        }
+
         private async Task AddTalentOrRecruiterProfile(AppUser user, List<string> roles)
         {
            if(user.Talent is null && user.Recruiter is null)
            {
                 if (roles.Contains(Roles.Talent.GetDescription()))
                 {
-                    user.Talent = new TalentProfile
+                    var profile = new TalentProfile
                     {
                         UserId = user.Id
                     };
+
+                    await _repository.TalentProfile.AddAsync(profile);
                 }
                 else
                 {
-                    user.Recruiter = new RecruiterProfile
+                    var profile = new RecruiterProfile
                     {
                         UserId = user.Id
                     };
-                }
 
-                await _userManager.UpdateAsync(user);
+                    await _repository.RecruiterProfile.AddAsync(profile);
+                }
            }
         }
         private async Task<RefreshToken?> ValidateRefreshToken(string token)

@@ -16,5 +16,10 @@ namespace PathFinder.Application.Helpers
             Match match = Regex.Match(phoneNumber, pattern);
             return match.Success;
         }
+
+        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> list)
+        {
+            return list is not null && list.Any();
+        }
     }
 }

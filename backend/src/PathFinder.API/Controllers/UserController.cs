@@ -35,5 +35,41 @@ namespace PathFinder.API.Controllers
             var userDetails = await _service.Account.GetLoggedInUserdetails();
             return Ok(userDetails);
         }
+
+        /// <summary>
+        /// Update recruiter profile
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch("update-recruiter")]
+        [Authorize(Roles = "Manager, Admin")]
+        [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateRecruiterProfile(RecruiterProfileUpdateRequest request)
+        {
+            return Ok(await _service.Account
+                .UpdateRecruiterProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request)));
+        }
+
+        /// <summary>
+        /// Update talent profile details
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch("update-talent")]
+        [Authorize(Roles = "Talent")]
+        [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateTalentProfile(TalentProfileUpdateRequest request)
+        {
+            return Ok(await _service.Account
+                .UpdateTalentProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request)));
+        }
     }
 }

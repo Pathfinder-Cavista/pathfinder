@@ -8,6 +8,7 @@ namespace PathFinder.Application.DTOs
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
+        public string? PhotoUrl { get; set; }
         public DateTime? LastLogin { get; set; }  
     }
 
@@ -27,7 +28,8 @@ namespace PathFinder.Application.DTOs
                 FullName = string.Concat(appUser.FirstName, " ", appUser.LastName),
                 Email = appUser.Email!,
                 Phone = appUser.PhoneNumber!,
-                LastLogin = appUser.LastLogin
+                LastLogin = appUser.LastLogin,
+                PhotoUrl = appUser.ProfilePhoto
             };
 
             if(profile != null)
@@ -54,7 +56,8 @@ namespace PathFinder.Application.DTOs
                 FullName = string.Concat(appUser.FirstName, " ", appUser.LastName),
                 Email = appUser.Email!,
                 Phone = appUser.PhoneNumber!,
-                LastLogin = appUser.LastLogin
+                LastLogin = appUser.LastLogin,
+                PhotoUrl= appUser.ProfilePhoto
             };
 
             if (profile != null)

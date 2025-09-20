@@ -10,6 +10,7 @@ namespace PathFinder.Domain.Entities
         [Required, StringLength(100)]
         public string LastName { get; set; } = string.Empty;
         public string? MiddleName { get; set; }
+        public string? ProfilePhoto { get; set; }
         public DateTime? LastLogin { get; set; }
         public DateTime CreratedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
