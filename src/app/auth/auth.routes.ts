@@ -4,6 +4,6 @@ export const routes: Routes = [
     {
         path: '',
         title: 'Sign In | Path Finder',
-        loadComponent: () => import('./sign-in/sign-in').then(c => c.SignIn),
+        loadComponent: () => import('./sign-in/sign-in.component').then(c => c.SignInComponent),
     }
 ];
