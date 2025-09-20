@@ -19,6 +19,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace PathFinder.Application.Features
 {
@@ -102,6 +103,9 @@ namespace PathFinder.Application.Features
                 throw new BadRequestException(roleResult.Errors.FirstOrDefault()?.Description ?? "Registration failed");
             }
 
+            
+            await AddTalentOrRecruiterProfile(user, new List<string> { command.Role.GetDescription() });
+            await _repository.SaveAsync();
             return RegisterDto.FromEntity(user);
         }
 
@@ -126,16 +130,42 @@ namespace PathFinder.Application.Features
                 throw new ForbiddenException("User not authenticated");
             }
 
-            var user = await _userManager.FindByIdAsync(loggedInUserId) ??
+            var user = await _userManager.Users
+                .Include(u => u.Talent)
+                .Include(u => u.Recruiter)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
                     throw new NotFoundException("User not found");
             
             var roles = await _userManager.GetRolesAsync(user);
+            await AddTalentOrRecruiterProfile(user, roles.ToList());
             return roles.Contains(Roles.Talent.GetDescription()) ?
                 TalentInfoDto.ToTalentInfoDto(user, user.Talent) :
                 RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter);
         }
 
         #region Private Methods
+        private async Task AddTalentOrRecruiterProfile(AppUser user, List<string> roles)
+        {
+           if(user.Talent is null && user.Recruiter is null)
+           {
+                if (roles.Contains(Roles.Talent.GetDescription()))
+                {
+                    user.Talent = new TalentProfile
+                    {
+                        UserId = user.Id
+                    };
+                }
+                else
+                {
+                    user.Recruiter = new RecruiterProfile
+                    {
+                        UserId = user.Id
+                    };
+                }
+
+                await _userManager.UpdateAsync(user);
+           }
+        }
         private async Task<RefreshToken?> ValidateRefreshToken(string token)
         {
             var hash = ComputeHash(token);
@@ -238,7 +268,7 @@ namespace PathFinder.Application.Features
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            return roles.Contains(Roles.Manager.ToString()) || roles.Contains(Roles.Admin.ToString());
+            return roles.Contains(Roles.Admin.ToString());
         }
 
         #endregion

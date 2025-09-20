@@ -12,6 +12,9 @@ namespace PathFinder.Infrastructure.Persistence
         public DbSet<JobApplication> Applications { get; set; }
         public DbSet<RecruiterProfile> Recruiters { get; set; }
         public DbSet<TalentProfile> Talents { get; set; }
+        public DbSet<Skill> Skills { get; set; }
+        public DbSet<TalentSkill> TalentSkills { get; set; }
+        public DbSet<JobSkill> JobSkills { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 
             : base(options) { }
@@ -19,6 +22,35 @@ namespace PathFinder.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<TalentSkill>()
+                .HasOne(ts => ts.TalentProfile)
+                .WithMany(s => s.Skills)
+                .HasForeignKey(t => t.TalentProfileId);
+
+            builder.Entity<TalentSkill>()
+                .HasOne(ts => ts.Skill)
+                .WithMany()
+                .HasForeignKey(s => s.SkillId);
+
+            builder.Entity<JobSkill>()
+                .HasOne(js => js.Job)
+                .WithMany(j => j.RequiredSkills)
+                .HasForeignKey(j => j.JobId);
+
+            builder.Entity<JobSkill>()
+                .HasOne(js => js.Skill)
+                .WithMany()
+                .HasForeignKey(j => j.SkillId);
+
+            builder.Entity<TalentSkill>()
+                .HasIndex(ts => new { ts.TalentProfileId, ts.SkillId })
+                .IsUnique();
+
+            builder.Entity<JobSkill>()
+                .HasIndex(js => new {  js.JobId, js.SkillId })
+                .IsUnique();
+
             builder.ApplyConfiguration(new RoleConfiguration());
         }
     }

@@ -24,6 +24,7 @@ app.UseAuthorization();
 
 app.UseHangfireDashboard(builder.Configuration)
     .RunMigrations();
+await app.SeedInitialDataAsync(logger);
 
 app.MapControllers();
 

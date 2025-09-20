@@ -11,5 +11,6 @@
         public string UserId { get; set; } = string.Empty;
         public AppUser? User { get; set; }
         public ICollection<JobApplication> Applications { get; set; } = [];
+        public ICollection<TalentSkill> Skills { get; set; } = [];
     }
 }
