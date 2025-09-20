@@ -139,11 +139,13 @@ namespace PathFinder.Application.Features
             await AddTalentOrRecruiterProfile(user, roles.ToList());
             if (roles.Contains(Roles.Talent.GetDescription()))
             {
-                var info = TalentInfoDto.ToTalentInfoDto(user, user.Talent);
-                if(user.Talent != null)
+                var talentData = await _repository.TalentProfile
+                    .GetAsync(t => t.UserId == loggedInUserId);
+                var info = TalentInfoDto.ToTalentInfoDto(user, talentData);
+                if(talentData != null)
                 {
-                    var skills = await _repository.Skill
-                        .GetTalentSkillsAsync(s => s.TalentProfileId == user.Talent.Id && s.Skill != null);
+                    var skills = await _repository.TalentSkill
+                        .GetAsync(s => s.TalentProfileId == talentData.Id);
 
                     skills.ForEach(ts =>
                     {
@@ -267,9 +269,8 @@ namespace PathFinder.Application.Features
 
             var allSkills = existingSkills.Concat(newSkills).ToList();
             var userExistingSkills = await _repository.TalentSkill
-                .GetAsync(s => allSkills.Select(i => i.Id).Contains(s.SkillId));
+                .GetAsync(s => s.TalentProfileId == talent.Id);
 
-            allSkills.RemoveAll(s => userExistingSkills.Select(s => s.SkillId).Contains(s.Id));
             var skillsToAdd = new List<TalentSkill>();
 
             foreach (var skill in allSkills)
@@ -281,6 +282,7 @@ namespace PathFinder.Application.Features
                 });
             }
 
+            await _repository.TalentSkill.RemoveManyAsync(userExistingSkills, false);
             await _repository.TalentSkill.AddRangeAsync(skillsToAdd, false);
             await _repository.SaveAsync();
         }
