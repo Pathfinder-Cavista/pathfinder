@@ -1,4 +1,5 @@
-﻿using PathFinder.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using PathFinder.Domain.Entities;
 using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
 using System.Linq.Expressions;
@@ -24,7 +25,10 @@ namespace PathFinder.Infrastructure.Repositories
 
         public async Task<List<TalentSkill>> GetAsync(Expression<Func<TalentSkill, bool>> expression)
         {
-            var skills =  await FindAsync(expression);
+            var skills =  await GetAsQueryable(expression)
+                .Include(ts => ts.Skill)
+                .ToListAsync();
+
             return skills;
         }
     }

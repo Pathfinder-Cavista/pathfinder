@@ -19,7 +19,7 @@ namespace PathFinder.API.Extensions
                     if(contextFeature != null )
                     {
                         logger.LogError("An error occurred: {Error}", contextFeature.Error);
-                        var message = "An unexpected error occurred.";
+                        var message = contextFeature.Error.Message;
                         switch (contextFeature.Error)
                         {
                             case BadRequestException: 
