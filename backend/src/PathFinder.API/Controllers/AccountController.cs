@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PathFinder.API.Controllers.Extensions;
 using PathFinder.API.Mappers;
 using PathFinder.API.Requests.Accounts;
 using PathFinder.Application.DTOs;
@@ -9,7 +10,7 @@ namespace PathFinder.API.Controllers
 {
     [Route("api/account")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : ApiControllerBase
     {
         private readonly IServiceManager _service;
 
@@ -36,7 +37,13 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> LoginAsync(AuthRequest request)
         {
             var command = AccountRequestMappers.ToLoginCommand(request);
-            return Ok(await _service.Account.LoginAsync(command));
+            var baseResult = await _service.Account.LoginAsync(command);
+            if (!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<TokenDto>());
         }
 
         /// <summary>
@@ -49,7 +56,7 @@ namespace PathFinder.API.Controllers
         /// <response code="500">If an unexpected error occurred</response>
         /// <returns></returns>
         [HttpPost("register")]
-        [ProducesResponseType(typeof(TokenDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RegisterDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -57,7 +64,13 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> RegisterAsync(RegisterRequest request)
         {
             var command = AccountRequestMappers.ToRegisterCommand(request);
-            return Ok(await _service.Account.RegisterAsync(command));
+            var baseResult = await _service.Account.RegisterAsync(command);
+            if(!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<RegisterDto>());
         }
 
         /// <summary>
@@ -78,7 +91,13 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> RefreshAsync(RefreshTokenRequest request)
         {
             var command = AccountRequestMappers.ToTokenCommand(request);
-            return Ok(await _service.Account.RefreshTokenAsync(command));
+            var baseResult = await _service.Account.RefreshTokenAsync(command);
+            if (!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<TokenDto>());
         }
     }
 }

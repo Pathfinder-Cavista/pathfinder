@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PathFinder.API.Controllers.Extensions;
 using PathFinder.API.Mappers;
 using PathFinder.API.Requests.Accounts;
 using PathFinder.Application.DTOs;
@@ -10,7 +11,7 @@ namespace PathFinder.API.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : ApiControllerBase
     {
         private readonly IServiceManager _service;
 
@@ -25,15 +26,31 @@ namespace PathFinder.API.Controllers
         /// <returns></returns>
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(typeof(TokenDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserBaseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetLoggedInUser()
         {
-            var userDetails = await _service.Account.GetLoggedInUserdetails();
-            return Ok(userDetails);
+            var isInTalentRole = HttpContext.User.IsInRole("Talent");
+            var userDetailsResult = isInTalentRole ? 
+                await _service.Account.GetLoggedInTalentDetails() : 
+                await _service.Account.GetLoggedInRecruiterDetails();
+            
+            if (!userDetailsResult.Success)
+            {
+                return ProcessError(userDetailsResult);
+            }
+
+            if (isInTalentRole)
+            {
+                return Ok(userDetailsResult.GetResult<TalentInfoDto>());
+            }
+            else
+            {
+                return Ok(userDetailsResult.GetResult<RecruiterInfoDto>());
+            }
         }
 
         /// <summary>
@@ -50,8 +67,14 @@ namespace PathFinder.API.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateRecruiterProfile(RecruiterProfileUpdateRequest request)
         {
-            return Ok(await _service.Account
-                .UpdateRecruiterProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request)));
+            var baseResponse = await _service.Account
+                .UpdateRecruiterProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request));
+            if (!baseResponse.Success)
+            {
+                return ProcessError(baseResponse);
+            }
+
+            return Ok(baseResponse.GetResult<string>());
         }
 
         /// <summary>
@@ -68,8 +91,14 @@ namespace PathFinder.API.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateTalentProfile(TalentProfileUpdateRequest request)
         {
-            return Ok(await _service.Account
-                .UpdateTalentProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request)));
+            var baseResult = await _service.Account
+                .UpdateTalentProfileAsync(AccountRequestMappers.ToProfileUpdateCommand(request));
+            if (!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<string>());
         }
     }
 }
