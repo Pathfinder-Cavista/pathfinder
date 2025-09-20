@@ -9,6 +9,7 @@ using PathFinder.Application.Exceptions;
 using PathFinder.Application.Helpers;
 using PathFinder.Application.Interfaces;
 using PathFinder.Application.Mappers;
+using PathFinder.Application.Responses;
 using PathFinder.Application.Settings;
 using PathFinder.Application.Validations.Accounts;
 using PathFinder.Domain.Entities;
@@ -44,12 +45,12 @@ namespace PathFinder.Application.Features
             _settings = options.Value;
         }
 
-        public async Task<TokenDto> LoginAsync(LoginCommand command)
+        public async Task<ApiBaseResponse> LoginAsync(LoginCommand command)
         {
             var validator = new LoginCommandValidator().Validate(command);
             if (!validator.IsValid)
             {
-                throw new BadRequestException(validator.Errors?.FirstOrDefault()?.ErrorMessage ?? "Invalid input");
+                return new BadRequestResponse(validator.Errors?.FirstOrDefault()?.ErrorMessage ?? "Invalid input");
             }
 
             var user = await _userManager.FindByEmailAsync(command.Email) ?? 
@@ -58,13 +59,13 @@ namespace PathFinder.Application.Features
             var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
             if (!passwordCheck.Succeeded)
             {
-                throw new BadRequestException("Wrong email or password");
+                return new BadRequestResponse("Wrong email or password");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             if(roles is null || !roles.Any())
             {
-                throw new ForbiddenException("You can not login at this time.");
+                return new ForbiddenResponse("You can not login at this time.");
             }
 
             var accessToken = CreateAccessToken(user, [.. roles]);
@@ -72,10 +73,10 @@ namespace PathFinder.Application.Features
 
             user.LastLogin = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
-            return new TokenDto(accessToken, refreshToken);
+            return new OkResponse<TokenDto>(new TokenDto(accessToken, refreshToken));
         }
 
-        public async Task<RegisterDto> RegisterAsync(RegisterCommand command)
+        public async Task<ApiBaseResponse> RegisterAsync(RegisterCommand command)
         {
             var canRegister = await ValidateRole(command.Role);
             if (!canRegister)
@@ -105,83 +106,112 @@ namespace PathFinder.Application.Features
 
             
             await AddTalentOrRecruiterProfile(user, new List<string> { command.Role.GetDescription() });
-            return RegisterDto.FromEntity(user);
+            return new OkResponse<RegisterDto>(RegisterDto.FromEntity(user));
         }
 
-        public async Task<TokenDto> RefreshTokenAsync(RefreshTokenCommand command)
+        public async Task<ApiBaseResponse> RefreshTokenAsync(RefreshTokenCommand command)
         {
-            var tokenFromDb = await ValidateRefreshToken(command.RefreshToken) ?? 
-                throw new ForbiddenException("Invalid or expired token");
+            var tokenFromDb = await ValidateRefreshToken(command.RefreshToken);
+            if(tokenFromDb == null)
+            {
+                return new ForbiddenResponse("Invalid or expired token");
+            }
 
-            var user = await _userManager.FindByIdAsync(tokenFromDb.UserId) ?? 
-                throw new NotFoundException("User not found");
+            var user = await _userManager.FindByIdAsync(tokenFromDb.UserId);
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             var newAccessToken = CreateAccessToken(user, roles.ToArray());
-            return new TokenDto(newAccessToken, command.RefreshToken);
+            return new OkResponse<TokenDto>(new TokenDto(newAccessToken, command.RefreshToken));
         }
 
-        public async Task<UserBaseDto?> GetLoggedInUserdetails()
+        public async Task<ApiBaseResponse> GetLoggedInRecruiterDetails()
         {
             var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
-                throw new ForbiddenException("User not authenticated");
+                return new ForbiddenResponse("User not authenticated");
             }
 
             var user = await _userManager.Users
                 .Include(u => u.Talent)
                 .Include(u => u.Recruiter)
-                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
-                    throw new NotFoundException("User not found");
-            
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId);
+
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
+
             var roles = await _userManager.GetRolesAsync(user);
             await AddTalentOrRecruiterProfile(user, roles.ToList());
-            if (roles.Contains(Roles.Talent.GetDescription()))
-            {
-                var talentData = await _repository.TalentProfile
-                    .GetAsync(t => t.UserId == loggedInUserId);
-                var info = TalentInfoDto.ToTalentInfoDto(user, talentData);
-                if(talentData != null)
-                {
-                    var skills = await _repository.TalentSkill
-                        .GetAsync(s => s.TalentProfileId == talentData.Id);
-
-                    skills.ForEach(ts =>
-                    {
-                        if(ts.Skill != null)
-                        {
-                            info.Skills.Add(ts.Skill.Name);
-                        }
-                    });
-                }
-
-                return info;
-            }
-            else
-            {
-                return RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter);
-            }
+            return new OkResponse<RecruiterInfoDto>(RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter));
         }
 
-        public async Task<SuccessResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command)
+        public async Task<ApiBaseResponse> GetLoggedInTalentDetails()
         {
             var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
-                throw new ForbiddenException("User not authenticated");
+                return new ForbiddenResponse("User not authenticated");
+            }
+
+            var user = await _userManager.Users
+                .Include(u => u.Talent)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId);
+
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            await AddTalentOrRecruiterProfile(user, roles.ToList());
+            var talentData = await _repository.TalentProfile
+                    .GetAsync(t => t.UserId == loggedInUserId);
+
+            var info = TalentInfoDto.ToTalentInfoDto(user, talentData);
+            if (talentData != null)
+            {
+                var skills = await _repository.TalentSkill
+                    .GetAsync(s => s.TalentProfileId == talentData.Id);
+
+                skills.ForEach(ts =>
+                {
+                    if (ts.Skill != null)
+                    {
+                        info.Skills.Add(ts.Skill.Name);
+                    }
+                });
+            }
+
+            return new OkResponse<TalentInfoDto>(info);
+        }
+
+        public async Task<ApiBaseResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command)
+        {
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return new ForbiddenResponse("User not authenticated");
             }
 
             var user = await _userManager.Users
                 .Include(u => u.Recruiter)
-                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
-                    throw new NotFoundException("User not found");
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId);
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
 
             if (!roles.Contains(Roles.Admin.GetDescription()) && !roles.Contains(Roles.Manager.GetDescription()))
             {
-                throw new ForbiddenException("You have no permission to perform this operation");
+                return new ForbiddenResponse("You have no permission to perform this operation");
             }
 
             user.Recruiter ??= new RecruiterProfile
@@ -193,32 +223,33 @@ namespace PathFinder.Application.Features
             user.Recruiter.Title = command.Title;
             await _userManager.UpdateAsync(user);
 
-            return new SuccessResponse("Profile successfully updated");
+            return new OkResponse<string>("Profile successfully updated");
         }
 
-        public async Task<SuccessResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command)
+        public async Task<ApiBaseResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command)
         {
             var validator = new TalentProfileUpdateCommandValidator().Validate(command);
             if (!validator.IsValid)
             {
-                throw new BadRequestException(validator.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid inputs");
+                return new BadRequestResponse(validator.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid inputs");
             }
 
             var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
-                throw new ForbiddenException("User not authenticated");
+                return new ForbiddenResponse("User not authenticated");
             }
 
-            var user = await _userManager.Users
-                //.Include(u => u.Talent)
-                .FirstOrDefaultAsync(u => u.Id == loggedInUserId) ??
-                    throw new NotFoundException("User not found");
+            var user = await _userManager.FindByIdAsync(loggedInUserId);
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
 
             var isATalent = await _userManager.IsInRoleAsync(user, Roles.Talent.GetDescription());
             if (!isATalent)
             {
-                throw new ForbiddenException("You have no permission to perform this operation");
+                return new ForbiddenResponse("You have no permission to perform this operation");
             }
 
             var talentProfile = await _repository.TalentProfile
@@ -242,7 +273,7 @@ namespace PathFinder.Application.Features
             await _repository.SaveAsync();
 
             await HandleSkillsUpdate(talentProfile, command.Skills);
-            return new SuccessResponse("Profile successfully updated");
+            return new OkResponse<string>("Profile successfully updated");
         }
 
         #region Private Methods

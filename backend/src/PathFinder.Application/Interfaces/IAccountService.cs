@@ -1,15 +1,16 @@
 ﻿using PathFinder.Application.Commands.Accounts;
-using PathFinder.Application.DTOs;
+using PathFinder.Application.Responses;
 
 namespace PathFinder.Application.Interfaces
 {
     public interface IAccountService
     {
-        Task<UserBaseDto?> GetLoggedInUserdetails();
-        Task<TokenDto> LoginAsync(LoginCommand command);
-        Task<TokenDto> RefreshTokenAsync(RefreshTokenCommand command);
-        Task<RegisterDto> RegisterAsync(RegisterCommand command);
-        Task<SuccessResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command);
-        Task<SuccessResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command);
+        Task<ApiBaseResponse> GetLoggedInRecruiterDetails();
+        Task<ApiBaseResponse> GetLoggedInTalentDetails();
+        Task<ApiBaseResponse> LoginAsync(LoginCommand command);
+        Task<ApiBaseResponse> RefreshTokenAsync(RefreshTokenCommand command);
+        Task<ApiBaseResponse> RegisterAsync(RegisterCommand command);
+        Task<ApiBaseResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command);
+        Task<ApiBaseResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command);
     }
 }

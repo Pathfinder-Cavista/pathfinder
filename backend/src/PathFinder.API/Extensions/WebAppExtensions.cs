@@ -101,7 +101,7 @@ namespace PathFinder.API.Extensions
                     if (!result.Succeeded)
                     {
                         logger.LogError($"Unable to add {user.FirstName}: {result.Errors.FirstOrDefault()?.Description}");
-                        return;
+                        continue;
                     }
 
                     var roleResult = await userManager.AddToRoleAsync(user, Domain.Enums.Roles.Admin.GetDescription());
@@ -109,7 +109,7 @@ namespace PathFinder.API.Extensions
                     {
                         await userManager.DeleteAsync(user);
                         logger.LogError($"Unable to add {user.FirstName} to the Admin role: {roleResult.Errors.FirstOrDefault()?.Description}");
-                        return;
+                        continue;
                     }
 
                     logger.LogInformation($"{user.FirstName} successfully registered");
