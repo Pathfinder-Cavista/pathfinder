@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
-import { ApiResponseModel } from '../../../models/generic/api-response.model';
+import { ApiResponseModel } from '../../../models/common/api-response.model';
 import { CurrentUserResponseModel, LoginResponseModel } from '../../../models/auth/auth.model';
 
 @Injectable({
