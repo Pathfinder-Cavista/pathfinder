@@ -163,9 +163,12 @@ namespace PathFinder.API.Extensions
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CorsPolicy", b =>
-                    b.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+                {
+                    b.WithOrigins("https://localhost:4200", "http://localhost:4200")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+                });
             });
 
             return services;
