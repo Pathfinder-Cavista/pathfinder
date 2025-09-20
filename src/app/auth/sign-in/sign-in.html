@@ -1,0 +1,71 @@
+<!-- Sign in Start -->
+<section class="sign-in-page">
+    <div class="container bg-white mt-5 p-0">
+        <div class="row no-gutters">
+            <div class="col-sm-6 align-self-center">
+                <div class="sign-in-from">
+                    <h1 class="mb-0">Sign in</h1>
+                    <p>Enter your email address and password to access the talent team panel.</p>
+                    <form class="mt-4">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Email address</label>
+                            <input type="email" class="form-control mb-0" id="exampleInputEmail1"
+                                placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Password</label>
+                            <input type="password" class="form-control mb-0" id="exampleInputPassword1"
+                                placeholder="Password">
+                        </div>
+                        <div class="d-inline-block w-100">
+                            <div class="custom-control custom-checkbox d-inline-block mt-2 pt-1">
+                                <input type="checkbox" class="custom-control-input" id="customCheck1">
+                                <label class="custom-control-label" for="customCheck1">Remember Me</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary float-right">Sign in</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-sm-6 text-center">
+                <div class="sign-in-detail text-white">
+                    <a class="sign-in-logo mb-5">
+                        <!-- <img src="images/logo-white.png" class="img-fluid" alt="logo"> -->
+                        <h1 class="fw-bolder text-white">Path Finder</h1>
+                    </a>
+
+                    <owl-carousel-o [options]="customOptions">
+                        <ng-template carouselSlide>
+                            <div class="item">
+                                <img src="images/login/1.png" class="img-fluid mb-4" alt="logo">
+                                <h4 class="mb-1 text-white">Manage your talent search</h4>
+                                <p>
+                                    It is a long established fact that having an automated process increases productivity
+                                </p>
+                            </div>
+                        </ng-template>
+                        <ng-template carouselSlide>
+                            <div class="item">
+                                <img src="images/login/1.png" class="img-fluid mb-4" alt="logo">
+                                <h4 class="mb-1 text-white">Manage your talent applications</h4>
+                                <p>
+                                    Receive and sort through applications from a central dashboard built with team efficiency in mind
+                                </p>
+                            </div>
+                        </ng-template>
+                        <ng-template carouselSlide>
+                            <div class="item">
+                                <img src="images/login/1.png" class="img-fluid mb-4" alt="logo">
+                                <h4 class="mb-1 text-white">Manage your reporting</h4>
+                                <p>
+                                    Expereince seamless reporting from your process at the click of a button and with visual charts
+                                </p>
+                            </div>
+                        </ng-template>
+                    </owl-carousel-o>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Sign in END -->
