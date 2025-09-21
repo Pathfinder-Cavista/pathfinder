@@ -13,6 +13,7 @@ namespace PathFinder.Application.DTOs
         public string Level { get; set; } = string.Empty;
         public string? Location { get; set; }
         public DateTime? DeadLine { get; set; }
-        public List<JobSkill> RequiredSkills { get; set; } = [];
+        public DateTime DateCreated { get; set; }
+        public List<string> RequiredSkills { get; set; } = [];
     }
 }
