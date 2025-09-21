@@ -1,6 +1,6 @@
 ﻿namespace PathFinder.Domain.Entities
 {
-    public class JobSkill : BaseEntity
+    public class JobSkill
     {
         public Guid JobId { get; set; }
         public Job? Job { get; set; }

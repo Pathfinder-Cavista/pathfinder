@@ -16,8 +16,8 @@ namespace PathFinder.Domain.Entities
         public DateTime? ClosingDate { get; set; }
 
         // Nav. properties
-        public string PostedByUserId { get; set; } = string.Empty;
-        public RecruiterProfile? PostedBy { get; set; }
+        public Guid RecruiterId { get; set; }
+        public RecruiterProfile? Recruiter { get; set; }
         public ICollection<JobApplication> Applications { get; set; } = [];
         public ICollection<JobSkill> RequiredSkills { get; set; } = [];
         public ICollection<JobRequirement> Requirements { get; set; } = [];

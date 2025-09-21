@@ -4,9 +4,9 @@ using PathFinder.Application.Helpers;
 
 namespace PathFinder.Application.Validations.Jobs
 {
-    public class PostJobCommandValidator : AbstractValidator<PostJobCommand>
+    public class JobCommandsValidator : AbstractValidator<JobWriteCommand>
     {
-        public PostJobCommandValidator()
+        public JobCommandsValidator()
         {
             RuleFor(x => x.JobTitle).NotEmpty()
                 .WithMessage("Job Title field is required.");

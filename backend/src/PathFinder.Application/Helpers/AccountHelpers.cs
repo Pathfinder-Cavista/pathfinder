@@ -10,6 +10,11 @@ namespace PathFinder.Application.Helpers
             return claim?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
+        public static bool IsInRole(ClaimsPrincipal? claim, string role)
+        {
+            return claim != null && claim.IsInRole(role);
+        }
+
         public static bool IsAValidPhoneNumber(string phoneNumber)
         {
             var pattern = @"^\+(\d{1,4})[-\s]?(\d{6,14})$";

@@ -1,7 +1,6 @@
 ﻿namespace PathFinder.Application.Commands.Jobs
 {
-    public class PostJobCommand : JobWriteCommand
+    public class JobQuery : PageQuery
     {
-        
     }
 }

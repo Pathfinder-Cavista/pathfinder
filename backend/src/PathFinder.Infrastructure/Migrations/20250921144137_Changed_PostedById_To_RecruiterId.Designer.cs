@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PathFinder.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PathFinder.Infrastructure.Persistence;
 namespace PathFinder.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921144137_Changed_PostedById_To_RecruiterId")]
+    partial class Changed_PostedById_To_RecruiterId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,21 +54,21 @@ namespace PathFinder.Infrastructure.Migrations
                         new
                         {
                             Id = "665376b2-6d04-42d6-95a8-4a14e1819649",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 2:41:36 PM",
                             Name = "Talent",
                             NormalizedName = "TALENT"
                         },
                         new
                         {
                             Id = "e6a2221f-9e15-4474-9264-73a76447849e",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 2:41:36 PM",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "b35f5379-539e-413c-8ebc-e407fdf705c2",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 2:41:36 PM",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -383,16 +386,29 @@ namespace PathFinder.Infrastructure.Migrations
 
             modelBuilder.Entity("PathFinder.Domain.Entities.JobSkill", b =>
                 {
-                    b.Property<Guid>("JobId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("SkillId")
-                        .HasColumnType("uuid");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
 
-                    b.HasKey("JobId", "SkillId");
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SkillId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("SkillId");
 

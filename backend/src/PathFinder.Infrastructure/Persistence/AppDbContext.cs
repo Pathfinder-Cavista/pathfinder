@@ -36,6 +36,9 @@ namespace PathFinder.Infrastructure.Persistence
                 .HasForeignKey(s => s.SkillId);
 
             builder.Entity<JobSkill>()
+                .HasKey(js => new { js.JobId, js.SkillId });
+
+            builder.Entity<JobSkill>()
                 .HasOne(js => js.Job)
                 .WithMany(j => j.RequiredSkills)
                 .HasForeignKey(j => j.JobId);
