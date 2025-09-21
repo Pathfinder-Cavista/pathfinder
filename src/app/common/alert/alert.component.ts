@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { AlertService } from '../../../generated/services/alert/alert.service';
@@ -28,7 +28,7 @@ export class AlertComponent implements OnInit, OnDestroy {
   alerts: Alert[] = [];
   private subscription: Subscription = new Subscription();
 
-  constructor(private alertService: AlertService) {}
+  constructor(private alertService: AlertService, private cdr: ChangeDetectorRef) {}
 
   closeAlert(id: number) {
     this.alertService.closeAlert(id);
@@ -50,7 +50,10 @@ export class AlertComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     this.subscription = this.alertService.alerts$.subscribe({
-      next: alerts => this.alerts = alerts
+      next: alerts => {
+        this.alerts = alerts;
+        this.cdr.detectChanges();
+      }
     });
   }
 
