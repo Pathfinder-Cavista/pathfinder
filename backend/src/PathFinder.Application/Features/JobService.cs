@@ -190,7 +190,7 @@ namespace PathFinder.Application.Features
             var jobSkillsQuery = _repository.JobSkill.AsQueryable(_ => true);
             var skillsQuery = _repository.Skill.AsQueryable(s => !s.IsDeprecated);
 
-            var data = jobs.Filter(query).AsLeanJobDto(jobSkillsQuery, skillsQuery, query.Order)
+            var data = jobs.AsLeanJobDto(jobSkillsQuery, skillsQuery, query)
                 .Paginate(query.Page, query.Size);
 
             return new OkResponse<Paginator<LeanJobDto>>(data);

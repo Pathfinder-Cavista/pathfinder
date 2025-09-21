@@ -8,7 +8,7 @@ namespace PathFinder.Application.Helpers
     {
         private const string DefaultOrder = "DESC";
 
-        public static IQueryable<Job> Filter(this IQueryable<Job> jobs, JobQuery jobQuery)
+        public static IQueryable<LeanJobDto> Filter(this IQueryable<LeanJobDto> jobs, JobQuery jobQuery)
         {
             if (!string.IsNullOrWhiteSpace(jobQuery.Search))
             {
@@ -18,15 +18,15 @@ namespace PathFinder.Application.Helpers
             }
             if (jobQuery.Level.HasValue)
             {
-                jobs = jobs.Where(j => j.Level == jobQuery.Level.Value);
+                jobs = jobs.Where(j => j.Level == jobQuery.Level.Value.GetDescription());
             }
             if (jobQuery.Type.HasValue)
             {
-                jobs = jobs.Where(j => j.EmploymentType == jobQuery.Type.Value);
+                jobs = jobs.Where(j => j.Type == jobQuery.Type.Value.GetDescription());
             }
             if (jobQuery.Status.HasValue)
             {
-                jobs = jobs.Where(j => j.Status == jobQuery.Status.Value);
+                jobs = jobs.Where(j => j.Status == jobQuery.Status.Value.GetDescription());
             }
 
             return jobs;
@@ -35,7 +35,7 @@ namespace PathFinder.Application.Helpers
         public static IQueryable<LeanJobDto> AsLeanJobDto(this IQueryable<Job> jobs, 
                                                             IQueryable<JobSkill> jobSkillQuery,
                                                             IQueryable<Skill> skillQuery,
-                                                            string sortOrder)
+                                                            JobQuery filter)
         {
             var query = from job in jobs
                         join js in jobSkillQuery on job.Id equals js.JobId
@@ -58,10 +58,10 @@ namespace PathFinder.Application.Helpers
                             RequiredSkills = grp.Select(sk => sk.Name).ToList(),
                         };
 
-            query = sortOrder.Equals(DefaultOrder, StringComparison.OrdinalIgnoreCase) ?
+            query = filter.Order.Equals(DefaultOrder, StringComparison.OrdinalIgnoreCase) ?
                 query.OrderByDescending(j => j.DateCreated) : query.OrderBy(j => j.DateCreated);
 
-            return query;
+            return query.Filter(filter);
         }
     }
 }
