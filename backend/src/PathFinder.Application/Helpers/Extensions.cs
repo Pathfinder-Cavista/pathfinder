@@ -41,5 +41,15 @@ namespace PathFinder.Application.Helpers
 
             return string.Join(" ", words);
         }
+
+        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> list)
+        {
+            return list is not null && list.Any();
+        }
+
+        public static DateTime ToDayEnd(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
+        }
     }
 }

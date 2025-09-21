@@ -11,6 +11,9 @@ namespace PathFinder.Domain.Entities
         public string UserId { get; set; } = string.Empty;
         public AppUser? User { get; set; }
 
+        public Guid OrganizationId { get; set; }
+        public Organization? Organization { get; set; }
+
         public ICollection<Job> PostedJobs { get; set; } = [];
     }
 }

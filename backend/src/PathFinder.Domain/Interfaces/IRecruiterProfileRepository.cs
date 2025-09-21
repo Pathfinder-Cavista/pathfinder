@@ -7,6 +7,6 @@ namespace PathFinder.Domain.Interfaces
     {
         Task AddAsync(RecruiterProfile profile, bool saveNow = true);
         Task EditAsync(RecruiterProfile profile, bool saveNow = true);
-        Task<RecruiterProfile?> GetAsync(Expression<Func<RecruiterProfile, bool>> expression, bool track = true);
+        Task<RecruiterProfile?> GetAsync(Expression<Func<RecruiterProfile, bool>> expression, bool track = true, bool includeOrg = false);
     }
 }

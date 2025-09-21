@@ -15,6 +15,8 @@ namespace PathFinder.Infrastructure.Persistence
         public DbSet<Skill> Skills { get; set; }
         public DbSet<TalentSkill> TalentSkills { get; set; }
         public DbSet<JobSkill> JobSkills { get; set; }
+        public DbSet<JobRequirement> JobRequirements { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 
             : base(options) { }

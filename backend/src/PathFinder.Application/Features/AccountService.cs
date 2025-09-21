@@ -78,7 +78,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> RegisterAsync(RegisterCommand command)
         {
-            var canRegister = await ValidateRole(command.Role);
+            var (canRegister, orgId) = await ValidateRole(command.Role);
             if (!canRegister)
             {
                 throw new ForbiddenException("You are not allowed to perform this action");
@@ -104,8 +104,7 @@ namespace PathFinder.Application.Features
                 throw new BadRequestException(roleResult.Errors.FirstOrDefault()?.Description ?? "Registration failed");
             }
 
-            
-            await AddTalentOrRecruiterProfile(user, new List<string> { command.Role.GetDescription() });
+            await AddTalentOrRecruiterProfile(user, new List<string> { command.Role.GetDescription() }, orgId);
             return new OkResponse<RegisterDto>(RegisterDto.FromEntity(user));
         }
 
@@ -137,8 +136,6 @@ namespace PathFinder.Application.Features
             }
 
             var user = await _userManager.Users
-                .Include(u => u.Talent)
-                .Include(u => u.Recruiter)
                 .FirstOrDefaultAsync(u => u.Id == loggedInUserId);
 
             if (user == null)
@@ -146,9 +143,16 @@ namespace PathFinder.Application.Features
                 return new NotFoundResponse("User not found");
             }
 
+            var recruiterProfile = await _repository.RecruiterProfile
+                .GetAsync(u => u.UserId == loggedInUserId, false, true);
+
             var roles = await _userManager.GetRolesAsync(user);
-            await AddTalentOrRecruiterProfile(user, roles.ToList());
-            return new OkResponse<RecruiterInfoDto>(RecruiterInfoDto.ToRecruiterInfoDto(user, user.Recruiter));
+            if(recruiterProfile == null)
+            {
+                await AddTalentOrRecruiterProfile(user, roles.ToList());
+            }
+
+            return new OkResponse<RecruiterInfoDto>(RecruiterInfoDto.ToRecruiterInfoDto(user, recruiterProfile));
         }
 
         public async Task<ApiBaseResponse> GetLoggedInTalentDetails()
@@ -214,13 +218,7 @@ namespace PathFinder.Application.Features
                 return new ForbiddenResponse("You have no permission to perform this operation");
             }
 
-            user.Recruiter ??= new RecruiterProfile
-                {
-                    UserId = loggedInUserId,
-                    Title = command.Title,
-                };
-            
-            user.Recruiter.Title = command.Title;
+            UserCommandMapper.UpdateRecruiterProfile(user, command);
             await _userManager.UpdateAsync(user);
 
             return new OkResponse<string>("Profile successfully updated");
@@ -255,24 +253,11 @@ namespace PathFinder.Application.Features
             var talentProfile = await _repository.TalentProfile
                 .GetAsync(p => p.UserId == loggedInUserId, true);
 
-            if(talentProfile == null)
-            {
-                talentProfile = new TalentProfile
-                {
-                    Location = command.Location,
-                    Address = command.Address,
-                    Summary = command.ProfileSummary,
-                    UserId = loggedInUserId
-                };
-            }
-
-            talentProfile.Location = command.Location;
-            talentProfile.Address = command.Address;
-            talentProfile.Summary = command.ProfileSummary;
+            UserCommandMapper.UpdateTalentProfile(user, command, talentProfile);
             await _userManager.UpdateAsync(user);
             await _repository.SaveAsync();
 
-            await HandleSkillsUpdate(talentProfile, command.Skills);
+            await HandleSkillsUpdate(talentProfile!, command.Skills);
             return new OkResponse<string>("Profile successfully updated");
         }
 
@@ -318,7 +303,7 @@ namespace PathFinder.Application.Features
             await _repository.SaveAsync();
         }
 
-        private async Task AddTalentOrRecruiterProfile(AppUser user, List<string> roles)
+        private async Task AddTalentOrRecruiterProfile(AppUser user, List<string> roles, Guid? orgId = null)
         {
            if(user.Talent is null && user.Recruiter is null)
            {
@@ -335,7 +320,8 @@ namespace PathFinder.Application.Features
                 {
                     var profile = new RecruiterProfile
                     {
-                        UserId = user.Id
+                        UserId = user.Id,
+                        OrganizationId = orgId.HasValue ? orgId.Value : Guid.Empty
                     };
 
                     await _repository.RecruiterProfile.AddAsync(profile);
@@ -424,27 +410,34 @@ namespace PathFinder.Application.Features
             return Convert.ToBase64String(bytes);
         }
 
-        private async Task<bool> ValidateRole(Roles role)
+        private async Task<(bool Valid, Guid? OrgId)> ValidateRole(Roles role)
         {
             if(role == Roles.Talent)
             {
-                return true;
+                return (true, null);
             }
 
             var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
             if(string.IsNullOrEmpty(loggedInUserId))
             {
-                return false;
+                return (false, null);
             }
 
             var user = await _userManager.FindByIdAsync(loggedInUserId);
             if (user == null)
             {
-                return false;
+                return (false, null);
+            }
+
+            var profile = await _repository.RecruiterProfile
+                .GetAsync(p => p.UserId == user.Id, false, true);
+            if(profile == null || profile.Organization == null)
+            {
+                return (false, null);
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            return roles.Contains(Roles.Admin.ToString());
+            return (roles.Contains(Roles.Admin.ToString()), profile.OrganizationId);
         }
 
         #endregion

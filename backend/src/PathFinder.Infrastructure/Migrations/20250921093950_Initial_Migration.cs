@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace PathFinder.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Postgres_Initial_Migration : Migration
+    public partial class Initial_Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,6 +36,7 @@ namespace PathFinder.Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     MiddleName = table.Column<string>(type: "text", nullable: true),
+                    ProfilePhoto = table.Column<string>(type: "text", nullable: true),
                     LastLogin = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreratedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -57,6 +58,39 @@ namespace PathFinder.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Organizations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Vision = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Mission = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    About = table.Column<string>(type: "text", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organizations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Skills",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Skills", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -183,28 +217,6 @@ namespace PathFinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Recruiters",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Recruiters", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Recruiters_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Talents",
                 columns: table => new
                 {
@@ -213,6 +225,7 @@ namespace PathFinder.Infrastructure.Migrations
                     Address = table.Column<string>(type: "text", nullable: true),
                     ResumeUrl = table.Column<string>(type: "text", nullable: true),
                     Summary = table.Column<string>(type: "text", nullable: true),
+                    YearsOfExperience = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
                     IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -230,17 +243,74 @@ namespace PathFinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Recruiters",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Recruiters", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Recruiters_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Recruiters_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TalentSkills",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TalentProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SkillId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TalentSkills", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TalentSkills_Skills_SkillId",
+                        column: x => x.SkillId,
+                        principalTable: "Skills",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TalentSkills_Talents_TalentProfileId",
+                        column: x => x.TalentProfileId,
+                        principalTable: "Talents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Jobs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    Summary = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     EmploymentType = table.Column<int>(type: "integer", nullable: false),
                     Level = table.Column<int>(type: "integer", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: true),
+                    ClosingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PostedByUserId = table.Column<string>(type: "text", nullable: false),
                     PostedById = table.Column<Guid>(type: "uuid", nullable: true),
                     IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
@@ -287,14 +357,65 @@ namespace PathFinder.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "JobRequirements",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Requirement = table.Column<string>(type: "text", nullable: false),
+                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobRequirements", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobRequirements_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "JobSkills",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SkillId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsRequired = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobSkills", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobSkills_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobSkills_Skills_SkillId",
+                        column: x => x.SkillId,
+                        principalTable: "Skills",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "665376b2-6d04-42d6-95a8-4a14e1819649", "9/19/2025 6:02:07 PM", "Talent", "TALENT" },
-                    { "b35f5379-539e-413c-8ebc-e407fdf705c2", "9/19/2025 6:02:07 PM", "Admin", "ADMIN" },
-                    { "e6a2221f-9e15-4474-9264-73a76447849e", "9/19/2025 6:02:07 PM", "Manager", "MANAGER" }
+                    { "665376b2-6d04-42d6-95a8-4a14e1819649", "9/21/2025 9:39:49 AM", "Talent", "TALENT" },
+                    { "b35f5379-539e-413c-8ebc-e407fdf705c2", "9/21/2025 9:39:49 AM", "Admin", "ADMIN" },
+                    { "e6a2221f-9e15-4474-9264-73a76447849e", "9/21/2025 9:39:49 AM", "Manager", "MANAGER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -345,9 +466,30 @@ namespace PathFinder.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_JobRequirements_JobId",
+                table: "JobRequirements",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Jobs_PostedById",
                 table: "Jobs",
                 column: "PostedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobSkills_JobId_SkillId",
+                table: "JobSkills",
+                columns: new[] { "JobId", "SkillId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobSkills_SkillId",
+                table: "JobSkills",
+                column: "SkillId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Recruiters_OrganizationId",
+                table: "Recruiters",
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Recruiters_UserId",
@@ -359,6 +501,17 @@ namespace PathFinder.Infrastructure.Migrations
                 name: "IX_Talents_UserId",
                 table: "Talents",
                 column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TalentSkills_SkillId",
+                table: "TalentSkills",
+                column: "SkillId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TalentSkills_TalentProfileId_SkillId",
+                table: "TalentSkills",
+                columns: new[] { "TalentProfileId", "SkillId" },
                 unique: true);
         }
 
@@ -384,22 +537,37 @@ namespace PathFinder.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "JobRequirements");
+
+            migrationBuilder.DropTable(
+                name: "JobSkills");
+
+            migrationBuilder.DropTable(
+                name: "TalentSkills");
+
+            migrationBuilder.DropTable(
                 name: "Tokens");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Jobs");
 
             migrationBuilder.DropTable(
-                name: "Talents");
+                name: "Skills");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "Talents");
 
             migrationBuilder.DropTable(
                 name: "Recruiters");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
         }
     }
 }

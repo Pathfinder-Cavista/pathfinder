@@ -40,6 +40,9 @@ namespace PathFinder.API.Mappers
         {
             return new RecruiterProfileUpdateCommand
             {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                OtherName = request.OtherName,
                 Title = request.ProfileTitle
             };
         }
@@ -48,10 +51,13 @@ namespace PathFinder.API.Mappers
         {
             return new TalentProfileUpdateCommand
             {
-                Address = request.HomeAddress,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                OtherName = request.OtherName,
                 Location = request.City,
                 ProfileSummary = request.CareerSummary,
-                Skills = request.ProfileSkills
+                Skills = request.ProfileSkills,
+                YearsOfExperience = request.YearsOfExperience
             };
         }
     }

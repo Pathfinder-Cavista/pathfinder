@@ -1,4 +1,5 @@
-﻿using PathFinder.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using PathFinder.Domain.Entities;
 using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
 using System.Linq.Expressions;
@@ -22,8 +23,14 @@ namespace PathFinder.Infrastructure.Repositories
             await UpdateAsync(profile, saveNow);
         }
 
-        public async Task<RecruiterProfile?> GetAsync(Expression<Func<RecruiterProfile, bool>> expression, bool track = true)
+        public async Task<RecruiterProfile?> GetAsync(Expression<Func<RecruiterProfile, bool>> expression, bool track = true, bool includeOrg = false)
         {
+            if (includeOrg)
+            {
+                return await GetAsQueryable(expression)
+                    .Include(p => p.Organization)
+                    .FirstOrDefaultAsync();
+            }
             return await FindOneAsync(expression, track);
         }
     }

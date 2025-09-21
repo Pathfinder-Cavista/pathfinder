@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace PathFinder.Application.Helpers
 {
-    public static class AccountHelpers
+    public class AccountHelpers
     {
         public static string? GetLoggedInUserId(ClaimsPrincipal? claim)
         {
@@ -15,11 +15,6 @@ namespace PathFinder.Application.Helpers
             var pattern = @"^\+(\d{1,4})[-\s]?(\d{6,14})$";
             Match match = Regex.Match(phoneNumber, pattern);
             return match.Success;
-        }
-
-        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> list)
-        {
-            return list is not null && list.Any();
         }
     }
 }

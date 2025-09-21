@@ -12,6 +12,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=PathFinderApiDb;Username=appuser;Password=YRaUUR76!Whst5qaPO;
+      - ConnectionStrings__DefaultConnection=Host=cav8p52l9arddb.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com;Port=5432;Database=ddaod7nrts07k5;Username=uaq3odjti90ejg;Password=p76bd2c99125d7772a66f668a58d12ac3eec654a34edc05c46cddcf4ae5be36c1;
       - HangfireSettings__Password=JA5p3r!25
       - HangfireSettings__UserName=hf-admin
       - JwtSettings__PrivateKey=d54098cbQ8eb5R4a53S8498T5004611355bd
@@ -35,7 +36,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
     networks:
       - webnet
 

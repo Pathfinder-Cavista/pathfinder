@@ -12,7 +12,9 @@ namespace PathFinder.Infrastructure.Repositories
         private readonly Lazy<IRecruiterProfileRepository> _recruiterProfileRepository;
         private readonly Lazy<ITalentSkillRepository> _talentSkillRepository;
         private readonly Lazy<IJobSkillRepository> _jobSkillRepository;
-
+        private readonly Lazy<IJobRepository> _jobRepository;
+        private readonly Lazy<IJobRequirementRepository> _jobRequirementRepository;
+        private readonly Lazy<IOrganizationRepository> _organizationRepository;
 
         public RepositoryManager(AppDbContext dbContext) 
         {
@@ -35,6 +37,15 @@ namespace PathFinder.Infrastructure.Repositories
 
             _jobSkillRepository = new Lazy<IJobSkillRepository>(()
                 => new JobSkillRepository(dbContext));
+
+            _jobRepository = new Lazy<IJobRepository>(()
+                => new JobRepository(dbContext));
+
+            _jobRequirementRepository = new Lazy<IJobRequirementRepository>(()
+                => new JobRequirementRepository(dbContext));
+
+            _organizationRepository = new Lazy<IOrganizationRepository>(()
+                => new OrganizationRepository(dbContext));
         }
 
         public ITokenRepository Token => _tokenRepository.Value;
@@ -43,6 +54,9 @@ namespace PathFinder.Infrastructure.Repositories
         public IRecruiterProfileRepository RecruiterProfile => _recruiterProfileRepository.Value;
         public ITalentSkillRepository TalentSkill => _talentSkillRepository.Value;
         public IJobSkillRepository JobSkill => _jobSkillRepository.Value;
+        public IJobRepository Job => _jobRepository.Value;
+        public IJobRequirementRepository JobRequirement => _jobRequirementRepository.Value;
+        public IOrganizationRepository Organization => _organizationRepository.Value;
 
         public async Task SaveAsync(CancellationToken cancellationToken = default)
             => await _dbContext.SaveChangesAsync(cancellationToken);

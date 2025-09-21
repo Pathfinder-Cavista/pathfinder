@@ -8,6 +8,9 @@
         IRecruiterProfileRepository RecruiterProfile { get; }
         ITalentSkillRepository TalentSkill { get; }
         IJobSkillRepository JobSkill { get; }
+        IJobRepository Job {  get; }
+        IJobRequirementRepository JobRequirement { get; }
+        IOrganizationRepository Organization { get; }
         Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }
