@@ -37,5 +37,19 @@ namespace PathFinder.API.Mappers
                 EmploymentType = request.EmploymentType
             };
         }
+
+        public static JobQuery MapJobQuery(JobQueryRequest request)
+        {
+            return new JobQuery
+            {
+                Size = request.Size,
+                Page = request.Page,
+                Order = request.SortOrder,
+                Level = request.Level,
+                Status = request.Status,
+                Type = request.Type,
+                Search = request.Search
+            };
+        }
     }
 }

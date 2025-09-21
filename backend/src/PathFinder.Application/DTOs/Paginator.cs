@@ -10,7 +10,7 @@
         public int PageCount { get; set; } = (int)Math.Ceiling((double)count / pageSize);
         public long ItemCount { get; set; } = count;
         public bool HasPrevious
-            => CurrentPage > PageCount;
+            => CurrentPage > 1;
         public bool HasNext
             => CurrentPage < PageCount;
     }

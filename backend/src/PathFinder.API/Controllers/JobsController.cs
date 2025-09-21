@@ -152,13 +152,10 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetPagedJobs()
+        public IActionResult GetPagedJobs([FromQuery] JobQueryRequest query)
         {
             var pagedJobsResult = _service.Job
-                .GetPaginatedJobs(new Application.Commands.Jobs.JobQuery
-                {
-
-                });
+                .GetPaginatedJobs(JobRequestsMapper.MapJobQuery(query));
 
             if (!pagedJobsResult.Success)
             {

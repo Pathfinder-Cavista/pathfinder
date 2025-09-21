@@ -1,5 +1,4 @@
-﻿using Hangfire.Dashboard;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Commands.Jobs;
@@ -186,11 +185,17 @@ namespace PathFinder.Application.Features
         public ApiBaseResponse GetPaginatedJobs(JobQuery query)
         {
             var jobs = _repository.Job
-                .GetQueryable(j => !j.IsDeprecated)
+                .GetQueryable(j => !j.IsDeprecated);
+
+            jobs = query.Order.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?
+                jobs.OrderByDescending(j => j.CreatedAt) : jobs.OrderBy(j => j.CreatedAt);
+                
+            var data = jobs
+                .Filter(query)
                 .AsLeanJobDto()
                 .Paginate(query.Page, query.Size);
 
-            return new OkResponse<Paginator<LeanJobDto>>(jobs);
+            return new OkResponse<Paginator<LeanJobDto>>(data);
         }
 
         #region Private Methods
