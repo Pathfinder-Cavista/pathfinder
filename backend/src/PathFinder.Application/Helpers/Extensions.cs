@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using PathFinder.Application.DTOs;
+using System.ComponentModel;
 
 namespace PathFinder.Application.Helpers
 {
@@ -40,6 +41,26 @@ namespace PathFinder.Application.Helpers
             }
 
             return string.Join(" ", words);
+        }
+
+        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> list)
+        {
+            return list is not null && list.Any();
+        }
+
+        public static DateTime ToDayEnd(this DateTime date, bool isUtc = true)
+        {
+            return isUtc ? new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, DateTimeKind.Utc) :
+                new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
+        }
+
+        public static Paginator<T> Paginate<T>(this IEnumerable<T> source, int page, int size)
+        {
+            var count = source.LongCount();
+            var items = source.Skip((page - 1) * size)
+                .Take(size).ToList();
+
+            return new Paginator<T>(items, count, page, size);
         }
     }
 }

@@ -15,6 +15,8 @@ namespace PathFinder.Infrastructure.Persistence
         public DbSet<Skill> Skills { get; set; }
         public DbSet<TalentSkill> TalentSkills { get; set; }
         public DbSet<JobSkill> JobSkills { get; set; }
+        public DbSet<JobRequirement> JobRequirements { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 
             : base(options) { }
@@ -32,6 +34,9 @@ namespace PathFinder.Infrastructure.Persistence
                 .HasOne(ts => ts.Skill)
                 .WithMany()
                 .HasForeignKey(s => s.SkillId);
+
+            builder.Entity<JobSkill>()
+                .HasKey(js => new { js.JobId, js.SkillId });
 
             builder.Entity<JobSkill>()
                 .HasOne(js => js.Job)

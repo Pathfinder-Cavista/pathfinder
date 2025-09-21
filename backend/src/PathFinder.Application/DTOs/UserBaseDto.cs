@@ -15,7 +15,6 @@ namespace PathFinder.Application.DTOs
     public class TalentInfoDto : UserBaseDto
     {
         public string? Location { get; set; }
-        public string? Address { get; set; }
         public string? ResumeUrl { get; set; }
         public string? CareerSummary { get; set; }
         public List<string> Skills { get; set; } = [];
@@ -35,7 +34,6 @@ namespace PathFinder.Application.DTOs
             if(profile != null)
             {
                 info.Location = profile.Location;
-                info.Address = profile.Address;
                 info.ResumeUrl = profile.ResumeUrl;
                 info.CareerSummary = profile.Summary;
             }
@@ -47,6 +45,7 @@ namespace PathFinder.Application.DTOs
     public class RecruiterInfoDto : UserBaseDto
     {
         public string? Title { get; set; }
+        public string? OrganizationName { get; set; }
 
         public static RecruiterInfoDto ToRecruiterInfoDto(AppUser appUser, RecruiterProfile? profile)
         {
@@ -63,6 +62,10 @@ namespace PathFinder.Application.DTOs
             if (profile != null)
             {
                 info.Title = profile.Title;
+                if(profile.Organization != null)
+                {
+                    info.OrganizationName = profile.Organization.Name;
+                }
             }
 
             return info;

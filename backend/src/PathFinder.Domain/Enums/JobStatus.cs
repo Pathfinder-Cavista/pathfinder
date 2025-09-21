@@ -4,12 +4,24 @@ namespace PathFinder.Domain.Enums
 {
     public enum JobStatus
     {
+        /// <summary>
+        /// Draft
+        /// </summary>
         [Description("Draft")]
         Draft,
-        [Description("Published")]
+        /// <summary>
+        /// Published
+        /// </summary>
+        [Description("Open")]
         Published,
+        /// <summary>
+        /// Closed
+        /// </summary>
         [Description("Closed")]
         Closed,
+        /// <summary>
+        /// Archived
+        /// </summary>
         [Description("Archived")]
         Archived
     }

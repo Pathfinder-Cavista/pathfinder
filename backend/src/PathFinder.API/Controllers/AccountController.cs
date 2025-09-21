@@ -47,13 +47,17 @@ namespace PathFinder.API.Controllers
         }
 
         /// <summary>
-        ///  Registers a user
+        /// Registers a new user
         /// </summary>
-        /// <param name="request"></param>
-        /// <response code="200">Returns the sample object</response>
-        /// <response code="400">If the request is invalid</response>
-        /// <response code="404">If user not found</response>
-        /// <response code="500">If an unexpected error occurred</response>
+        /// <param name="request">Registration payload
+        /// <br/><br/>
+        /// <b>Accepted values for <c>Role</c>: </b>
+        /// <list type="bullet">
+        /// <item><description>0 = Talent, </description></item>
+        /// <item><description>1 = Manager, </description></item>
+        /// <item><description>2 = Admin</description></item>
+        /// </list>
+        /// </param>
         /// <returns></returns>
         [HttpPost("register")]
         [ProducesResponseType(typeof(RegisterDto), StatusCodes.Status200OK)]

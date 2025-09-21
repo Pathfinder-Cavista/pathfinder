@@ -51,21 +51,21 @@ namespace PathFinder.Infrastructure.Migrations
                         new
                         {
                             Id = "665376b2-6d04-42d6-95a8-4a14e1819649",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Talent",
                             NormalizedName = "TALENT"
                         },
                         new
                         {
                             Id = "e6a2221f-9e15-4474-9264-73a76447849e",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "b35f5379-539e-413c-8ebc-e407fdf705c2",
-                            ConcurrencyStamp = "9/20/2025 7:08:35 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -272,6 +272,9 @@ namespace PathFinder.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("ClosingDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -294,18 +297,11 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("PostedById")
+                    b.Property<Guid>("RecruiterId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("PostedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Summary")
-                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -314,7 +310,7 @@ namespace PathFinder.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostedById");
+                    b.HasIndex("RecruiterId");
 
                     b.ToTable("Jobs");
                 });
@@ -356,7 +352,7 @@ namespace PathFinder.Infrastructure.Migrations
                     b.ToTable("Applications");
                 });
 
-            modelBuilder.Entity("PathFinder.Domain.Entities.JobSkill", b =>
+            modelBuilder.Entity("PathFinder.Domain.Entities.JobRequirement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -368,19 +364,35 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Requirement")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.ToTable("JobRequirements");
+                });
+
+            modelBuilder.Entity("PathFinder.Domain.Entities.JobSkill", b =>
+                {
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("SkillId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("JobId", "SkillId");
 
                     b.HasIndex("SkillId");
 
@@ -388,6 +400,45 @@ namespace PathFinder.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("JobSkills");
+                });
+
+            modelBuilder.Entity("PathFinder.Domain.Entities.Organization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Mission")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Vision")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("PathFinder.Domain.Entities.RecruiterProfile", b =>
@@ -405,6 +456,9 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -414,6 +468,8 @@ namespace PathFinder.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -482,9 +538,6 @@ namespace PathFinder.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -506,6 +559,9 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -599,11 +655,13 @@ namespace PathFinder.Infrastructure.Migrations
 
             modelBuilder.Entity("PathFinder.Domain.Entities.Job", b =>
                 {
-                    b.HasOne("PathFinder.Domain.Entities.RecruiterProfile", "PostedBy")
+                    b.HasOne("PathFinder.Domain.Entities.RecruiterProfile", "Recruiter")
                         .WithMany("PostedJobs")
-                        .HasForeignKey("PostedById");
+                        .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("PostedBy");
+                    b.Navigation("Recruiter");
                 });
 
             modelBuilder.Entity("PathFinder.Domain.Entities.JobApplication", b =>
@@ -623,6 +681,17 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Navigation("Job");
 
                     b.Navigation("Talent");
+                });
+
+            modelBuilder.Entity("PathFinder.Domain.Entities.JobRequirement", b =>
+                {
+                    b.HasOne("PathFinder.Domain.Entities.Job", "Job")
+                        .WithMany("Requirements")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Job");
                 });
 
             modelBuilder.Entity("PathFinder.Domain.Entities.JobSkill", b =>
@@ -646,11 +715,19 @@ namespace PathFinder.Infrastructure.Migrations
 
             modelBuilder.Entity("PathFinder.Domain.Entities.RecruiterProfile", b =>
                 {
+                    b.HasOne("PathFinder.Domain.Entities.Organization", "Organization")
+                        .WithMany("Members")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("PathFinder.Domain.Entities.AppUser", "User")
                         .WithOne("Recruiter")
                         .HasForeignKey("PathFinder.Domain.Entities.RecruiterProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Organization");
 
                     b.Navigation("User");
                 });
@@ -697,6 +774,13 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Navigation("Applications");
 
                     b.Navigation("RequiredSkills");
+
+                    b.Navigation("Requirements");
+                });
+
+            modelBuilder.Entity("PathFinder.Domain.Entities.Organization", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("PathFinder.Domain.Entities.RecruiterProfile", b =>

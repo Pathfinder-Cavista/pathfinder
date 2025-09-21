@@ -3,5 +3,6 @@
     public interface IServiceManager
     {
         IAccountService Account {  get; }
+        IJobService Job { get; }
     }
 }

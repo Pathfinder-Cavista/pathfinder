@@ -6,12 +6,14 @@ using PathFinder.API.Filters;
 using PathFinder.Application.Helpers;
 using PathFinder.Application.Mappers;
 using PathFinder.Domain.Entities;
+using PathFinder.Domain.Enums;
 using PathFinder.Infrastructure.Persistence;
 
 namespace PathFinder.API.Extensions
 {
     public static class WebAppExtensions
     {
+        private const string organizationName = "Cavista Technologies";
         internal static WebApplication RunMigrations(this WebApplication app, bool alwayRun = false)
         {
             if (app.Environment.IsDevelopment() || alwayRun)
@@ -41,6 +43,7 @@ namespace PathFinder.API.Extensions
         internal static async Task SeedInitialDataAsync(this WebApplication app, ILogger<Program> logger)
         {
             using var scope = app.Services.CreateScope();
+            await SeedOrganization(scope, logger);
             await SeedAdminUsers(scope, logger);
         }
 
@@ -48,7 +51,9 @@ namespace PathFinder.API.Extensions
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            if(userManager == null || config == null)
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            if(userManager == null || config == null || context == null)
             {
                 logger.LogWarning("Required services are not instantialted");
                 return;
@@ -79,7 +84,10 @@ namespace PathFinder.API.Extensions
                 .ToList();
 
             adminUsers.RemoveAll(e => !missingUserEmails.Contains(e.Email));
-            if (adminUsers.Count != 0)
+            var organization = await context.Set<Organization>()
+                .FirstOrDefaultAsync(o => o.Name == organizationName);
+
+            if (adminUsers.Count != 0 && organization != null)
             {
                 foreach (var userTuple in adminUsers)
                 {
@@ -94,7 +102,8 @@ namespace PathFinder.API.Extensions
                     user.Recruiter = new RecruiterProfile
                     {
                         UserId = user.Id,
-                        Title = "Platform Admin."
+                        Title = "Platform Admin.",
+                        OrganizationId = organization.Id
                     };
 
                     var result = await userManager.CreateAsync(user, password);
@@ -118,6 +127,45 @@ namespace PathFinder.API.Extensions
             else
             {
                 logger.LogInformation("Seeding skipped... Users already exist in the DB");
+            }
+        }
+
+        private static async Task SeedOrganization(IServiceScope scope, ILogger<Program> logger)
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+            if (context == null || userManager == null)
+            {
+                logger.LogWarning("Required services are not instantialted");
+                return;
+            }
+
+            var existingOrg = await context.Set<Organization>()
+                .FirstOrDefaultAsync(o => o.Name == organizationName);
+
+            if(existingOrg == null)
+            {
+                var organization = new Organization
+                {
+                    Name = organizationName,
+                    Vision = "To be the most innovative and respected technology solutions provider in the global market",
+                    Mission = "To empower our clients with the world's best technology solutions",
+                    About = @"Cavista Technologies is a leader in providing software engineering and development services to orgainzations around the world. 
+With engineers and industry experts accross the globe, Cavista provides around-the-clock support that streamlines processes and minimizes project delivery time."
+                };
+
+                logger.LogInformation($"Adding {organizationName} to Organizations table");
+                await context.Set<Organization>().AddAsync(organization);
+                await context.SaveChangesAsync();
+                logger.LogInformation($"Added {organizationName} to Organizations table");
+
+                return;
+            }
+            else
+            {
+                logger.LogInformation($"{organizationName} is already in the DB.");
+                return;
             }
         }
     }
