@@ -222,7 +222,6 @@ namespace PathFinder.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: true),
-                    Address = table.Column<string>(type: "text", nullable: true),
                     ResumeUrl = table.Column<string>(type: "text", nullable: true),
                     Summary = table.Column<string>(type: "text", nullable: true),
                     YearsOfExperience = table.Column<int>(type: "integer", nullable: false),
@@ -311,8 +310,7 @@ namespace PathFinder.Infrastructure.Migrations
                     Level = table.Column<int>(type: "integer", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: true),
                     ClosingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    PostedByUserId = table.Column<string>(type: "text", nullable: false),
-                    PostedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    RecruiterId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -321,10 +319,11 @@ namespace PathFinder.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Jobs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Jobs_Recruiters_PostedById",
-                        column: x => x.PostedById,
+                        name: "FK_Jobs_Recruiters_RecruiterId",
+                        column: x => x.RecruiterId,
                         principalTable: "Recruiters",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -383,17 +382,13 @@ namespace PathFinder.Infrastructure.Migrations
                 name: "JobSkills",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     JobId = table.Column<Guid>(type: "uuid", nullable: false),
                     SkillId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsRequired = table.Column<bool>(type: "boolean", nullable: false),
-                    IsDeprecated = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    IsRequired = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobSkills", x => x.Id);
+                    table.PrimaryKey("PK_JobSkills", x => new { x.JobId, x.SkillId });
                     table.ForeignKey(
                         name: "FK_JobSkills_Jobs_JobId",
                         column: x => x.JobId,
@@ -413,9 +408,9 @@ namespace PathFinder.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "665376b2-6d04-42d6-95a8-4a14e1819649", "9/21/2025 9:39:49 AM", "Talent", "TALENT" },
-                    { "b35f5379-539e-413c-8ebc-e407fdf705c2", "9/21/2025 9:39:49 AM", "Admin", "ADMIN" },
-                    { "e6a2221f-9e15-4474-9264-73a76447849e", "9/21/2025 9:39:49 AM", "Manager", "MANAGER" }
+                    { "665376b2-6d04-42d6-95a8-4a14e1819649", "9/21/2025 6:31:40 PM", "Talent", "TALENT" },
+                    { "b35f5379-539e-413c-8ebc-e407fdf705c2", "9/21/2025 6:31:40 PM", "Admin", "ADMIN" },
+                    { "e6a2221f-9e15-4474-9264-73a76447849e", "9/21/2025 6:31:40 PM", "Manager", "MANAGER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -471,9 +466,9 @@ namespace PathFinder.Infrastructure.Migrations
                 column: "JobId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Jobs_PostedById",
+                name: "IX_Jobs_RecruiterId",
                 table: "Jobs",
-                column: "PostedById");
+                column: "RecruiterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobSkills_JobId_SkillId",

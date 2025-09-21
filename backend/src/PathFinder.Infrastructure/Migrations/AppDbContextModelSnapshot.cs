@@ -51,21 +51,21 @@ namespace PathFinder.Infrastructure.Migrations
                         new
                         {
                             Id = "665376b2-6d04-42d6-95a8-4a14e1819649",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Talent",
                             NormalizedName = "TALENT"
                         },
                         new
                         {
                             Id = "e6a2221f-9e15-4474-9264-73a76447849e",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "b35f5379-539e-413c-8ebc-e407fdf705c2",
-                            ConcurrencyStamp = "9/21/2025 3:35:07 PM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

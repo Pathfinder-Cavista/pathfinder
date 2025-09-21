@@ -12,8 +12,8 @@ using PathFinder.Infrastructure.Persistence;
 namespace PathFinder.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250921111224_Removed_Address_Column")]
-    partial class Removed_Address_Column
+    [Migration("20250921183141_Initial_Migration")]
+    partial class Initial_Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,21 +54,21 @@ namespace PathFinder.Infrastructure.Migrations
                         new
                         {
                             Id = "665376b2-6d04-42d6-95a8-4a14e1819649",
-                            ConcurrencyStamp = "9/21/2025 11:12:23 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Talent",
                             NormalizedName = "TALENT"
                         },
                         new
                         {
                             Id = "e6a2221f-9e15-4474-9264-73a76447849e",
-                            ConcurrencyStamp = "9/21/2025 11:12:23 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "b35f5379-539e-413c-8ebc-e407fdf705c2",
-                            ConcurrencyStamp = "9/21/2025 11:12:23 AM",
+                            ConcurrencyStamp = "9/21/2025 6:31:40 PM",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -300,12 +300,8 @@ namespace PathFinder.Infrastructure.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("PostedById")
+                    b.Property<Guid>("RecruiterId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("PostedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -317,7 +313,7 @@ namespace PathFinder.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostedById");
+                    b.HasIndex("RecruiterId");
 
                     b.ToTable("Jobs");
                 });
@@ -390,29 +386,16 @@ namespace PathFinder.Infrastructure.Migrations
 
             modelBuilder.Entity("PathFinder.Domain.Entities.JobSkill", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SkillId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("JobId", "SkillId");
 
                     b.HasIndex("SkillId");
 
@@ -675,11 +658,13 @@ namespace PathFinder.Infrastructure.Migrations
 
             modelBuilder.Entity("PathFinder.Domain.Entities.Job", b =>
                 {
-                    b.HasOne("PathFinder.Domain.Entities.RecruiterProfile", "PostedBy")
+                    b.HasOne("PathFinder.Domain.Entities.RecruiterProfile", "Recruiter")
                         .WithMany("PostedJobs")
-                        .HasForeignKey("PostedById");
+                        .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("PostedBy");
+                    b.Navigation("Recruiter");
                 });
 
             modelBuilder.Entity("PathFinder.Domain.Entities.JobApplication", b =>

@@ -12,7 +12,7 @@ namespace PathFinder.Domain.Enums
         /// <summary>
         /// Published
         /// </summary>
-        [Description("Published")]
+        [Description("Open")]
         Published,
         /// <summary>
         /// Closed
