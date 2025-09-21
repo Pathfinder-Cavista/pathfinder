@@ -1,0 +1,15 @@
+<div class="alert-container">
+    @for (alert of alerts; track alert.id) {
+    <div class="alert bg-{{alert.type}}" [ngClass]="alert.type" [@alertState] (click)="closeAlert(alert.id)">
+        <div class="alert-icon">
+            <i [ngClass]="getIconForAlert(alert.type)"></i>
+        </div>
+        <div class="alert-text">
+            <strong>{{ alert.title }}</strong>: {{ alert.message }}
+        </div>
+        <button type="button" class="close text-dark" (click)="closeAlert(alert.id)">
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+    }
+</div>
