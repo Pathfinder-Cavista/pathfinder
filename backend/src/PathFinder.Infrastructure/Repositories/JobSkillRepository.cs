@@ -39,5 +39,12 @@ namespace PathFinder.Infrastructure.Repositories
                  .Where(expression)
                  .ToListAsync();
         }
+
+        public IQueryable<JobSkill> AsQueryable(Expression<Func<JobSkill, bool>> expression)
+        {
+            return _context.Set<JobSkill>()
+                .AsQueryable()
+                .Where(expression);
+        }
     }
 }

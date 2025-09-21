@@ -187,12 +187,10 @@ namespace PathFinder.Application.Features
             var jobs = _repository.Job
                 .GetQueryable(j => !j.IsDeprecated);
 
-            jobs = query.Order.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?
-                jobs.OrderByDescending(j => j.CreatedAt) : jobs.OrderBy(j => j.CreatedAt);
-                
-            var data = jobs
-                .Filter(query)
-                .AsLeanJobDto()
+            var jobSkillsQuery = _repository.JobSkill.AsQueryable(_ => true);
+            var skillsQuery = _repository.Skill.AsQueryable(s => !s.IsDeprecated);
+
+            var data = jobs.Filter(query).AsLeanJobDto(jobSkillsQuery, skillsQuery, query.Order)
                 .Paginate(query.Page, query.Size);
 
             return new OkResponse<Paginator<LeanJobDto>>(data);
