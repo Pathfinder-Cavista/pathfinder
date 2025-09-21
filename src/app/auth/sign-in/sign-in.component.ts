@@ -41,7 +41,7 @@ export class SignInComponent {
       next: () => {
         this.alertService.showSuccess('Success', 'Sign in operation successful!')
         this.authService.fetchCurrentUser().subscribe({
-          next: () => this.router.navigate(['/dashboard']),
+          next: () => this.router.navigate(['/main/dashboard']),
           error: (err) => this.alertService.showDanger('Error', err.error.message)
         });
       },
