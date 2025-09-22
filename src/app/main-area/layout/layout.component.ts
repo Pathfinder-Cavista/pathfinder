@@ -2,13 +2,15 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../generated/services/auth/auth.service';
 import { filter, Subscription } from 'rxjs';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-layout.component',
   imports: [
     RouterOutlet,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    NgClass
 ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss'

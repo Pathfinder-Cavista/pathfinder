@@ -20,10 +20,10 @@
           <li class="iq-menu-title"><i class="ri-subtract-line"></i><small>Components</small></li>
           
           <li routerLinkActive="active">
-            <a href="#roleinfo" class="iq-waves-effect collapsed" data-toggle="collapse"
+            <a href="#roleinfo" class="iq-waves-effect" [ngClass]="(currentRoute.includes('/main/roles/')) ? '' : 'collapse'" data-toggle="collapse"
                aria-expanded="{{(currentRoute.includes('/main/roles/')) ? 'true' : 'false'}}">
               <i class="ri-briefcase-line"></i><span>Roles</span><i class="ri-arrow-right-s-line iq-arrow-right"></i></a>
-            <ul id="roleinfo" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+            <ul id="roleinfo" class="iq-submenu collapse" [ngClass]="(currentRoute.includes('/main/roles/')) ? 'show' : ''" data-parent="#iq-sidebar-toggle">
               <li routerLinkActive="active"><a routerLink="/main/roles/all"><i class="ri-file-list-line"></i>All Roles</a></li>
               <li routerLinkActive="active"><a routerLink="/main/roles/add"><i class="ri-add-line"></i>Add Role</a></li>
             </ul>
