@@ -1,4 +1,4 @@
-﻿namespace PathFinder.Application.Commands
+﻿namespace PathFinder.Application.Queries
 {
     public class PageQuery
     {

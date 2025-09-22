@@ -27,6 +27,11 @@ namespace PathFinder.API.Controllers
                     Message = ((ForbiddenResponse)response).Message,
                     Status = StatusCodes.Status403Forbidden
                 }),
+                ConflictResponse => Conflict(new ErrorResponse
+                {
+                    Message = ((ConflictResponse)response).Message,
+                    Status = StatusCodes.Status409Conflict
+                }),
                 _ => throw new NotImplementedException()
             };
         }

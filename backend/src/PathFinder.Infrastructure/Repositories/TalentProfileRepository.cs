@@ -26,5 +26,10 @@ namespace PathFinder.Infrastructure.Repositories
         {
             return await FindOneAsync(expression, track);
         }
+
+        public IQueryable<TalentProfile> AsQueryable(Expression<Func<TalentProfile, bool>> expression)
+        {
+            return GetAsQueryable(expression);
+        }
     }
 }

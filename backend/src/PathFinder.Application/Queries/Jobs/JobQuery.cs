@@ -1,6 +1,6 @@
 ﻿using PathFinder.Domain.Enums;
 
-namespace PathFinder.Application.Commands.Jobs
+namespace PathFinder.Application.Queries.Jobs
 {
     public class JobQuery : PageQuery
     {

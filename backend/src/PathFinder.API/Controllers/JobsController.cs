@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PathFinder.API.Controllers.Extensions;
 using PathFinder.API.Mappers;
+using PathFinder.API.Requests;
 using PathFinder.API.Requests.Jobs;
 using PathFinder.Application.DTOs;
 using PathFinder.Application.Exceptions;
@@ -151,7 +152,15 @@ namespace PathFinder.API.Controllers
             return Ok(baseResult.GetResult<EntityIdDto>());
         }
 
+        /// <summary>
+        /// Gets paged lists of jobs.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(Paginator<LeanJobDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPagedJobs([FromQuery] JobQueryRequest query)
         {
             var pagedJobsResult = _service.Job
@@ -163,6 +172,98 @@ namespace PathFinder.API.Controllers
             }
 
             return Ok(pagedJobsResult.GetResult<Paginator<LeanJobDto>>());
+        }
+
+        /// <summary>
+        /// Endpoint for talents to apply for jobs
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPost("{id}/apply")]
+        [Authorize(Roles = "Talent")]
+        [ProducesResponseType(typeof(ApplicationDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Apply([FromRoute] Guid id)
+        {
+            var response = await _service.Job.ApplyAsync(id);
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<ApplicationDto>());
+        }
+
+        /// <summary>
+        /// Endpoint for getting paged list of applications for a job. Only accessible to Talent Managers and Admins
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="pageQuery"></param>
+        /// <returns></returns>
+        [HttpGet("{id}/applications")]
+        [Authorize(Roles = "Admin, Manager")]
+        [ProducesResponseType(typeof(Paginator<ApplicationDataDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Applications([FromRoute] Guid id,
+                                                        [FromQuery] PageQueryRequest pageQuery)
+        {
+            var response = await _service.Job
+                .GetJobApplicationsAsync(JobRequestsMapper.MapToApplicationQueries(id, pageQuery));
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<Paginator<ApplicationDataDto>>());
+        }
+
+        /// <summary>
+        /// Endpoint for getting paged list of talent's job applications
+        /// </summary>
+        /// <param name="pageQuery"></param>
+        /// <returns></returns>
+        [HttpGet("applications")]
+        [Authorize(Roles = "Talent")]
+        [ProducesResponseType(typeof(Paginator<ApplicationDataDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Applications([FromQuery] PageQueryRequest pageQuery)
+        {
+            var response = await _service.Job
+                .GetTalentJobApplicationsAsync(JobRequestsMapper.MapPageQueries(pageQuery));
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<Paginator<ApplicationDataDto>>());
+        }
+
+        /// <summary>
+        /// Endpoint for getting a job application by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="applicationId"></param>
+        /// <returns></returns>
+        [HttpGet("{id}/applications/{applicationId}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApplicationDataDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Application([FromRoute] Guid id, 
+                                                        [FromRoute] Guid applicationId)
+        {
+            var response = await _service.Job
+                .GetApplicationAsync(applicationId, id);
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<ApplicationDataDto>());
         }
     }
 }

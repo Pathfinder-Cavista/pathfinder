@@ -24,7 +24,7 @@ namespace PathFinder.Application.Features
                 => new AccountService(userManager, signInManager, contextAccessor, repository, options, uploadService));
 
             _jobService = new Lazy<IJobService>(()
-                => new JobService(repository, contextAccessor));
+                => new JobService(repository, contextAccessor, userManager));
         }
 
         public IAccountService Account => _accountService.Value;
