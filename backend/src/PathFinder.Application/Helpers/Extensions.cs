@@ -1,10 +1,15 @@
-﻿using PathFinder.Application.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+using PathFinder.Application.DTOs;
+using PathFinder.Domain.Enums;
 using System.ComponentModel;
 
 namespace PathFinder.Application.Helpers
 {
     public static class Extensions
     {
+        private const long MaxImageSize = 2048000; //2mb
+        private const long MaxDocSize = 1024000; //1mb
+
         public static string GetDescription(this Enum value)
         {
             if (Attribute.GetCustomAttribute(value.GetType()?.GetField(value.ToString())!, 
@@ -61,6 +66,36 @@ namespace PathFinder.Application.Helpers
                 .Take(size).ToList();
 
             return new Paginator<T>(items, count, page, size);
+        }
+
+        public static (bool Valid, string Message) IsAValidImage(this IFormFile file, UploadMediaType mediaType)
+        {
+            if(!Enum.IsDefined(typeof(UploadMediaType), mediaType)) 
+                return (false, "Invalid media type");
+
+            if(file is null || file.Length <= 0) 
+                return (false, "Please upload a file");
+
+            if(mediaType == UploadMediaType.Image)
+            {
+                var allowedFormats = mediaType.GetDescription().Split('|');
+                if (!allowedFormats.Any(f => file.FileName.EndsWith(f))) 
+                    return (false, string.Format("Invalid image type. Accepted extensions: {0}",string.Join(',', allowedFormats)));
+
+                if(file.Length > MaxImageSize) 
+                    return (false, $"File size too large. Max image size: ({MaxImageSize/1024}mb)");
+            }
+            else if(mediaType == UploadMediaType.Document)
+            {
+                var allowedFormats = mediaType.GetDescription().Split('|');
+                if (!allowedFormats.Any(f => file.FileName.EndsWith(f)))
+                    return (false, string.Format("Invalid document type. Accepted extensions: {0}", string.Join(',', allowedFormats)));
+
+                if (file.Length > MaxDocSize)
+                        return (false, $"File size too large. Max doc size: ({MaxDocSize / 1024}mb)");
+            }
+
+            return (true, "Valid");
         }
     }
 }

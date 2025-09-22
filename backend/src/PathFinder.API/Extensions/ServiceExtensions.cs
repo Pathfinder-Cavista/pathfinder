@@ -5,6 +5,7 @@ using Hangfire.RecurringJobExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PathFinder.Application.Features;
@@ -29,11 +30,30 @@ namespace PathFinder.API.Extensions
 
             services.ConfigureHangfire(configuration)
                 .RegisterDbContext(connectionString)
+                .AddScoped<IUploadService, UploadService>()
                 .AddScoped<IRepositoryManager, RepositoryManager>()
                 .AddScoped<IServiceManager, ServiceManager>()
                 .ConfigureSwaggerDocs()
                 .ConfigureJwt(configuration)
-                .ConfigureCors();        }
+                .ConfigureCors()
+                .ConfigureCloudinary(configuration);        
+        }
+
+        private static IServiceCollection ConfigureCloudinary(this IServiceCollection services,
+                                                                IConfiguration configuration)
+        {
+            var config = configuration.GetSection("Cloudinary");
+
+            return services
+                .Configure<CloudinarySettings>(config)
+                .AddSingleton<IUploadService>(sp =>
+                {
+                    var setting = sp.GetService<IOptions<CloudinarySettings>>() ?? 
+                        throw new ArgumentNullException(nameof(CloudinarySettings));
+
+                    return new UploadService(setting);
+                });
+        }
 
         private static IServiceCollection ConfigureHangfire(this IServiceCollection services,
                                                             IConfiguration configuration)

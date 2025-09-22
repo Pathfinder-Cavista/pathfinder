@@ -1,4 +1,5 @@
-﻿using PathFinder.Application.Commands.Accounts;
+﻿using Microsoft.AspNetCore.Http;
+using PathFinder.Application.Commands.Accounts;
 using PathFinder.Application.Responses;
 
 namespace PathFinder.Application.Interfaces
@@ -12,5 +13,7 @@ namespace PathFinder.Application.Interfaces
         Task<ApiBaseResponse> RegisterAsync(RegisterCommand command);
         Task<ApiBaseResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command);
         Task<ApiBaseResponse> UpdateTalentProfileAsync(TalentProfileUpdateCommand command);
+        Task<ApiBaseResponse> UploadProfileImage(IFormFile formFile);
+        Task<ApiBaseResponse> UploadResumeAsync(IFormFile formFile);
     }
 }

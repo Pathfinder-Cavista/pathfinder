@@ -4,6 +4,7 @@
     {
         public string? Location { get; set; } = string.Empty;
         public string? ResumeUrl { get; set; } = string.Empty;
+        public string? ResumePublicId { get; set; }
         public string? Summary { get; set; } = string.Empty;
         public int YearsOfExperience { get; set; }
 
