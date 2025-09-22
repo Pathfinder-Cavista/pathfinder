@@ -21,7 +21,7 @@ export class App implements OnInit, OnDestroy {
   constructor(private authService: AuthService) { }
 
   private getCurrentUser() {
-    this.authService.fetchCurrentUser().subscribe({
+    const sub = this.authService.fetchCurrentUser().subscribe({
       next: () => {
         this.isLoading.set(false);
       },
@@ -30,6 +30,8 @@ export class App implements OnInit, OnDestroy {
         this.isLoading.set(false);
       },
     });
+
+    this.subscription.push(sub);
   }
 
   ngOnInit(): void {
