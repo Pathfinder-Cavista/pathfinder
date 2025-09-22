@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Commands.Jobs;
 using PathFinder.Application.DTOs;
@@ -17,15 +16,12 @@ namespace PathFinder.Application.Features
     public class JobService : IJobService
     {
         private readonly IRepositoryManager _repository;
-        private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _contextAccessor;
 
         public JobService(IRepositoryManager repository,
-                          UserManager<AppUser> userManager,
                           IHttpContextAccessor contextAccessor)
         {
             _repository = repository;
-            _userManager = userManager;
             _contextAccessor = contextAccessor;
         }
 

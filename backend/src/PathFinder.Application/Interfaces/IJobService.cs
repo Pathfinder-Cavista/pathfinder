@@ -1,4 +1,5 @@
-﻿using PathFinder.Application.Commands.Jobs;
+﻿using Microsoft.AspNetCore.Http;
+using PathFinder.Application.Commands.Jobs;
 using PathFinder.Application.Responses;
 
 namespace PathFinder.Application.Interfaces

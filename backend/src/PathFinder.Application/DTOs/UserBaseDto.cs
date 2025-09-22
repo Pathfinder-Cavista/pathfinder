@@ -15,8 +15,8 @@ namespace PathFinder.Application.DTOs
     public class TalentInfoDto : UserBaseDto
     {
         public string? Location { get; set; }
-        public string? ResumeUrl { get; set; }
         public string? CareerSummary { get; set; }
+        public string? ResumeUrl { get; set; }
         public List<string> Skills { get; set; } = [];
 
         public static TalentInfoDto ToTalentInfoDto(AppUser appUser, TalentProfile? profile)
@@ -56,7 +56,7 @@ namespace PathFinder.Application.DTOs
                 Email = appUser.Email!,
                 Phone = appUser.PhoneNumber!,
                 LastLogin = appUser.LastLogin,
-                PhotoUrl= appUser.ProfilePhoto
+                PhotoUrl= appUser.ProfilePhoto,     
             };
 
             if (profile != null)

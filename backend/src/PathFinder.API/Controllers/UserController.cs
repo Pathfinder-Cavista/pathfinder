@@ -100,5 +100,53 @@ namespace PathFinder.API.Controllers
 
             return Ok(baseResult.GetResult<string>());
         }
+
+       /// <summary>
+       /// Uploads user's profile picture
+       /// </summary>
+       /// <param name="file"></param>
+       /// <returns></returns>
+        [HttpPatch("upload-profile-image")]
+        [Authorize]
+        [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UploadPicture(IFormFile file)
+        {
+            var baseResult = await _service.Account
+                .UploadProfileImage(file);
+            if (!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<string>());
+        }
+
+        /// <summary>
+        /// Uploads talent's CV
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPatch("upload-cv")]
+        [Authorize(Roles = "Talent")]
+        [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UploadCV(IFormFile file)
+        {
+            var baseResult = await _service.Account
+                .UploadResumeAsync(file);
+            if (!baseResult.Success)
+            {
+                return ProcessError(baseResult);
+            }
+
+            return Ok(baseResult.GetResult<string>());
+        }
     }
 }

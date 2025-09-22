@@ -19,8 +19,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace PathFinder.Application.Features
 {
@@ -30,18 +28,21 @@ namespace PathFinder.Application.Features
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IRepositoryManager _repository;
+        private readonly IUploadService _uploadService;
         private readonly JwtSettings _settings;
 
         public AccountService(UserManager<AppUser> userManager,
                               SignInManager<AppUser> signInManager,
                               IHttpContextAccessor contextAccessor,
                               IRepositoryManager repository,
-                              IOptions<JwtSettings> options)
+                              IOptions<JwtSettings> options,
+                              IUploadService uploadService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _contextAccessor = contextAccessor;
             _repository = repository;
+            _uploadService = uploadService;
             _settings = options.Value;
         }
 
@@ -259,6 +260,76 @@ namespace PathFinder.Application.Features
 
             await HandleSkillsUpdate(talentProfile!, command.Skills);
             return new OkResponse<string>("Profile successfully updated");
+        }
+
+        public async Task<ApiBaseResponse> UploadProfileImage(IFormFile formFile)
+        {
+            var validation = formFile.IsAValidImage(UploadMediaType.Image);
+            if (!validation.Valid)
+            {
+                return new BadRequestResponse(validation.Message);
+            }
+
+            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            if(string.IsNullOrWhiteSpace(userId))
+            {
+                return new ForbiddenResponse("Access denied.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
+
+            await using var stream = formFile.OpenReadStream();
+            var result = await _uploadService.UploadImageAsync(userId.Replace("-", ""), formFile.FileName, stream);
+            if(result == null)
+            {
+                return new BadRequestResponse("Image file upload. Please try again shortly");
+            }
+
+            user.ProfilePhoto = result.Url;
+            user.ProfilePhotoPublicId = result.PublicId;
+            await _userManager.UpdateAsync(user);
+
+            return new OkResponse<string>("Profile image successfully uploaded");
+        }
+
+        public async Task<ApiBaseResponse> UploadResumeAsync(IFormFile formFile)
+        {
+            var validation = formFile.IsAValidImage(UploadMediaType.Document);
+            if (!validation.Valid)
+            {
+                return new BadRequestResponse(validation.Message);
+            }
+
+            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return new ForbiddenResponse("Access denied.");
+            }
+
+            var user = await _userManager.Users
+                .Include(u => u.Talent)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null || user.Talent == null)
+            {
+                return new NotFoundResponse("User profile not found");
+            }
+
+            await using var stream = formFile.OpenReadStream();
+            var result = await _uploadService.UploadRawAsync(userId.Replace("-", ""), formFile.FileName, stream);
+            if (result == null)
+            {
+                return new BadRequestResponse("Image file upload. Please try again shortly");
+            }
+
+            user.Talent.ResumeUrl = result.Url;
+            user.Talent.ResumePublicId = result.PublicId;
+            await _userManager.UpdateAsync(user);
+
+            return new OkResponse<string>("CV successfully uploaded");
         }
 
         #region Private Methods
