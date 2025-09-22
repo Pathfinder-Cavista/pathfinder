@@ -15,6 +15,7 @@ namespace PathFinder.Infrastructure.Repositories
         private readonly Lazy<IJobRepository> _jobRepository;
         private readonly Lazy<IJobRequirementRepository> _jobRequirementRepository;
         private readonly Lazy<IOrganizationRepository> _organizationRepository;
+        private readonly Lazy<IJobApplicationRepository> _jobApplicationRepository;
 
         public RepositoryManager(AppDbContext dbContext) 
         {
@@ -46,6 +47,9 @@ namespace PathFinder.Infrastructure.Repositories
 
             _organizationRepository = new Lazy<IOrganizationRepository>(()
                 => new OrganizationRepository(dbContext));
+
+            _jobApplicationRepository = new Lazy<IJobApplicationRepository>(()
+                => new JobApplicationRepository(dbContext));
         }
 
         public ITokenRepository Token => _tokenRepository.Value;
@@ -57,6 +61,7 @@ namespace PathFinder.Infrastructure.Repositories
         public IJobRepository Job => _jobRepository.Value;
         public IJobRequirementRepository JobRequirement => _jobRequirementRepository.Value;
         public IOrganizationRepository Organization => _organizationRepository.Value;
+        public IJobApplicationRepository Application => _jobApplicationRepository.Value;
 
         public async Task SaveAsync(CancellationToken cancellationToken = default)
             => await _dbContext.SaveChangesAsync(cancellationToken);

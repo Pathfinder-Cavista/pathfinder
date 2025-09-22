@@ -11,6 +11,7 @@
         IJobRepository Job {  get; }
         IJobRequirementRepository JobRequirement { get; }
         IOrganizationRepository Organization { get; }
+        IJobApplicationRepository Application { get; }
         Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }

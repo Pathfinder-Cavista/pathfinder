@@ -1,5 +1,5 @@
-﻿using PathFinder.Application.Commands.Jobs;
-using PathFinder.Application.DTOs;
+﻿using PathFinder.Application.DTOs;
+using PathFinder.Application.Queries.Jobs;
 using PathFinder.Domain.Entities;
 
 namespace PathFinder.Application.Helpers
@@ -62,6 +62,56 @@ namespace PathFinder.Application.Helpers
                 query.OrderByDescending(j => j.DateCreated) : query.OrderBy(j => j.DateCreated);
 
             return query.Filter(filter);
+        }
+
+        public static IQueryable<ApplicationDataDto> AsApplicationsDto(this IQueryable<JobApplication> applications, 
+                                                                        Job job,
+                                                                        IQueryable<AppUser> users,
+                                                                        IQueryable<TalentProfile> talents)
+        {
+            var query = from application in applications
+                        join talent in talents on application.TalentId equals talent.Id
+                        join user in users on talent.UserId equals user.Id
+                        select new ApplicationDataDto
+                        {
+                            Id = application.Id,
+                            JobId = job.Id,
+                            ApplicantFullName = string.Format("{0} {1}", user.FirstName, user.LastName),
+                            ResumeUrl = application.ResumeUrl,
+                            ApplicationDate = application.CreatedAt,
+                            JobTitle = job.Title,
+                            JobDescription = job.Description,
+                            JobStatus = job.Status.GetDescription(),
+                            TalentId = application.TalentId,
+                            JobType = job.EmploymentType.GetDescription()
+                        };
+
+            return query
+                .OrderByDescending(a => a.ApplicationDate);
+        }
+
+        public static IQueryable<ApplicationDataDto> AsApplicationsDto(this IQueryable<JobApplication> applications,
+                                                                        IQueryable<Job> jobs,
+                                                                        AppUser user)
+        {
+            var query = from application in applications
+                        join job in jobs on application.JobId equals job.Id
+                        select new ApplicationDataDto
+                        {
+                            Id = application.Id,
+                            JobId = job.Id,
+                            ApplicantFullName = string.Format("{0} {1}", user.FirstName, user.LastName),
+                            ResumeUrl = application.ResumeUrl,
+                            ApplicationDate = application.CreatedAt,
+                            JobTitle = job.Title,
+                            JobDescription = job.Description,
+                            JobStatus = job.Status.GetDescription(),
+                            TalentId = application.TalentId,
+                            JobType = job.EmploymentType.GetDescription()
+                        };
+
+            return query
+                .OrderByDescending(a => a.ApplicationDate);
         }
     }
 }

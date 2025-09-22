@@ -1,15 +1,19 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Commands.Jobs;
 using PathFinder.Application.DTOs;
 using PathFinder.Application.Helpers;
 using PathFinder.Application.Interfaces;
 using PathFinder.Application.Mappers;
+using PathFinder.Application.Queries;
+using PathFinder.Application.Queries.Jobs;
 using PathFinder.Application.Responses;
 using PathFinder.Application.Validations.Jobs;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace PathFinder.Application.Features
 {
@@ -17,12 +21,15 @@ namespace PathFinder.Application.Features
     {
         private readonly IRepositoryManager _repository;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly UserManager<AppUser> _userManager;
 
         public JobService(IRepositoryManager repository,
-                          IHttpContextAccessor contextAccessor)
+                          IHttpContextAccessor contextAccessor,
+                          UserManager<AppUser> userManager)
         {
             _repository = repository;
             _contextAccessor = contextAccessor;
+            _userManager = userManager;
         }
 
         public async Task<ApiBaseResponse> PostJobAsync(PostJobCommand command)
@@ -190,6 +197,152 @@ namespace PathFinder.Application.Features
                 .Paginate(query.Page, query.Size);
 
             return new OkResponse<Paginator<LeanJobDto>>(data);
+        }
+
+        public async Task<ApiBaseResponse> ApplyAsync(Guid id)
+        {
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            if(string.IsNullOrWhiteSpace(loggedInUserId))
+            {
+                return new BadRequestResponse("Invalid user login.");
+            }
+
+            var talent = await _userManager.Users
+                .Include(u => u.Talent)
+                .FirstOrDefaultAsync(u => u.Id == loggedInUserId);
+
+            if(talent == null || talent.Talent == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
+
+            if (string.IsNullOrWhiteSpace(talent.Talent.ResumeUrl))
+            {
+                return new BadRequestResponse("Please upload a CV to apply for this job");
+            }
+
+            var job = await _repository.Job.GetAsync(j => j.Id == id);
+            if (job == null)
+            {
+                return new NotFoundResponse("Job not found");
+            }
+
+            if(job.Status != JobStatus.Published)
+            {
+                return new ForbiddenResponse("This job is no longer open for applications");
+            }
+
+            var existingApplication = await _repository.Application
+                .GetAsync(a => a.JobId == id && a.TalentId == talent.Talent.Id);
+            if(existingApplication != null)
+            {
+                return new ForbiddenResponse("Already applied for this job");
+            }
+
+            var application = new JobApplication
+            {
+                JobId = job.Id,
+                TalentId = talent.Talent.Id,
+                ResumeUrl = talent.Talent.ResumeUrl
+            };
+
+            await _repository.Application.ApplyAsync(application);
+            // TODO: Alert the user and the Recruiter
+            return new OkResponse<ApplicationDto>(new ApplicationDto(job.Id, application.Id));
+        }
+
+        public async Task<ApiBaseResponse> GetApplicationAsync(Guid applicationId, Guid jobId)
+        {
+            var isATalent = AccountHelpers
+                .IsInRole(_contextAccessor.HttpContext.User, Roles.Talent.GetDescription());
+
+            var talentId = Guid.Empty;
+            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            if (isATalent)
+            {
+                var talent = await _repository.TalentProfile
+                    .GetAsync(p => p.UserId == userId && !string.IsNullOrEmpty(userId));
+                if(talent != null)
+                {
+                    talentId = talent.Id;
+                }
+            }
+
+            var application = await _repository.Application
+                .GetAsync(a => a.Id == applicationId && a.JobId == jobId && 
+                    (!isATalent || (isATalent && talentId != Guid.Empty && a.TalentId == talentId)));
+
+            if(application == null)
+            {
+                return new NotFoundResponse("Job application not found");
+            }
+
+            var job = await _repository.Job
+                .GetAsync(j => j.Id == application.JobId);
+            if(job == null)
+            {
+                return new NotFoundResponse("No Job found for this application");
+            }
+
+            return new OkResponse<ApplicationDataDto>(new ApplicationDataDto
+            {
+                Id = application.Id,
+                JobId = job.Id,
+                ResumeUrl = application.ResumeUrl,
+                ApplicationDate = application.CreatedAt,
+                TalentId = application.TalentId,
+                JobTitle = job.Title,
+                JobDescription = job.Description,
+                JobStatus = job.Status.GetDescription(),
+                JobType = job.EmploymentType.GetDescription()
+            });
+        }
+
+        public async Task<ApiBaseResponse> GetJobApplicationsAsync(ApplicationQueries queries)
+        {
+            var job = await _repository.Job
+               .GetAsync(j => j.Id == queries.JobId);
+            if (job == null)
+            {
+                return new NotFoundResponse("No job record found for this Id");
+            }
+
+            var users = _userManager.Users
+                .Include(u => u.Talent)
+                .Where(u => u.Talent != null);
+
+            var talents = _repository.TalentProfile
+                .AsQueryable(x => !x.IsDeprecated);
+
+            var applications = _repository.Application
+                .AsQueryable(a => a.JobId == queries.JobId)
+                .AsApplicationsDto(job, users, talents)
+                .Paginate(queries.Page, queries.Size);
+
+            return new OkResponse<Paginator<ApplicationDataDto>>(applications);
+        }
+
+        public async Task<ApiBaseResponse> GetTalentJobApplicationsAsync(PageQuery queries)
+        {
+            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var user = await _userManager.Users
+                .Include(u => u.Talent)
+                .FirstOrDefaultAsync(u => u.Id == userId && !string.IsNullOrEmpty(userId));
+
+            if(user == null || user.Talent == null)
+            {
+                return new NotFoundResponse("User not found");
+            }
+
+            var jobs = _repository.Job
+                .GetQueryable(_ => true);
+
+            var applications = _repository.Application
+                .AsQueryable(a => a.TalentId == user.Talent.Id)
+                .AsApplicationsDto(jobs, user)
+                .Paginate(queries.Page, queries.Size);
+
+            return new OkResponse<Paginator<ApplicationDataDto>>(applications);
         }
 
         #region Private Methods

@@ -1,4 +1,4 @@
-﻿using PathFinder.Application.Commands;
+﻿using PathFinder.Application.Queries;
 
 namespace PathFinder.API.Requests
 {
