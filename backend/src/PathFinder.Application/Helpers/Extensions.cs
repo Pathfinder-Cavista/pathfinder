@@ -83,7 +83,7 @@ namespace PathFinder.Application.Helpers
                     return (false, string.Format("Invalid image type. Accepted extensions: {0}",string.Join(',', allowedFormats)));
 
                 if(file.Length > MaxImageSize) 
-                    return (false, $"File size too large. Max image size: ({MaxImageSize/(1024 * 1014)}mb)");
+                    return (false, $"File size too large. Max image size: 2mb");
             }
             else if(mediaType == UploadMediaType.Document)
             {
@@ -92,7 +92,7 @@ namespace PathFinder.Application.Helpers
                     return (false, string.Format("Invalid document type. Accepted extensions: {0}", string.Join(',', allowedFormats)));
 
                 if (file.Length > MaxDocSize)
-                        return (false, $"File size too large. Max doc size: ({MaxDocSize / (1024 * 1024)}mb)");
+                        return (false, $"File size too large. Max doc size: 1mb");
             }
 
             return (true, "Valid");
