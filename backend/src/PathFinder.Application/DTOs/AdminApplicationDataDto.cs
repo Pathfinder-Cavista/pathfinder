@@ -1,7 +1,11 @@
-﻿namespace PathFinder.Application.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace PathFinder.Application.DTOs
 {
-    public class ApplicationDataDto
+    public class AdminApplicationDataDto
     {
+        private string eligibilityText = "";
+
         public Guid Id { get; set; }
         public Guid JobId { get; set; }
         public string ApplicantFullName { get; set; } = string.Empty;
@@ -13,5 +17,10 @@
         public string JobStatus { get; set; } = string.Empty;
         public string ApplicationStatus { get; set; } = string.Empty;
         public DateTime ApplicationDate { get; set; }
+        public bool IsEligible { get; set; }
+        public string EligibilityThreshold => $"{Threshold * 100}%";
+        [JsonIgnore]
+        public double Threshold { get; set; }
+
     }
 }

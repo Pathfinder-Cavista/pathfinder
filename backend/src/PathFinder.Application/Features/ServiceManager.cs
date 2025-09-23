@@ -18,13 +18,14 @@ namespace PathFinder.Application.Features
                               IHttpContextAccessor contextAccessor,
                               IRepositoryManager repository,
                               IOptions<JwtSettings> options,
-                              IUploadService uploadService)
+                              IUploadService uploadService,
+                              IEligibilityService eligibility)
         {
             _accountService = new Lazy<IAccountService>(() 
                 => new AccountService(userManager, signInManager, contextAccessor, repository, options, uploadService));
 
             _jobService = new Lazy<IJobService>(()
-                => new JobService(repository, contextAccessor, userManager));
+                => new JobService(repository, contextAccessor, userManager, eligibility));
         }
 
         public IAccountService Account => _accountService.Value;

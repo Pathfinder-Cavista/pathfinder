@@ -13,6 +13,8 @@ namespace PathFinder.Domain.Entities
 
         [Required]
         public string? ResumeUrl { get; set; }
+        public bool IsEligible { get; set; }
+        public double AttainedThreshold { get; set; }
         public JobApplicationStatus Status { get; set; } = JobApplicationStatus.Applied;
     }
 }

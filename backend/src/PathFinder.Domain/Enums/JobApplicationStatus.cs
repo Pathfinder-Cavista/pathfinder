@@ -15,6 +15,11 @@ namespace PathFinder.Domain.Enums
         [Description("In Review")]
         InReview,
         /// <summary>
+        /// Interviewing
+        /// </summary>
+        [Description("Interviewing")]
+        Interviewing,
+        /// <summary>
         /// Interviewed
         /// </summary>
         [Description("Interviewed")]
@@ -29,7 +34,7 @@ namespace PathFinder.Domain.Enums
         /// </summary>
         [Description("Hired")]
         Hired,
-        /// <summary>
+        /// <summary>1
         /// Rejected
         /// </summary>
         [Description("Rejected")]

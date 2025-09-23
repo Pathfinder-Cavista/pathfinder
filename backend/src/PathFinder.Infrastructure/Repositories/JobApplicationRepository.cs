@@ -26,9 +26,9 @@ namespace PathFinder.Infrastructure.Repositories
         }
 
         public async Task EditAsync(JobApplication application,
-                                                    bool track = false)
+                                                    bool save = true)
         {
-            await UpdateAsync(application, track);
+            await UpdateAsync(application, save);
         }
     }
 }

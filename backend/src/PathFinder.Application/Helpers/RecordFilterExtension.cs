@@ -64,7 +64,7 @@ namespace PathFinder.Application.Helpers
             return query.Filter(filter);
         }
 
-        public static IQueryable<ApplicationDataDto> AsApplicationsDto(this IQueryable<JobApplication> applications, 
+        public static IQueryable<AdminApplicationDataDto> AsApplicationsDto(this IQueryable<JobApplication> applications, 
                                                                         Job job,
                                                                         IQueryable<AppUser> users,
                                                                         IQueryable<TalentProfile> talents)
@@ -72,7 +72,7 @@ namespace PathFinder.Application.Helpers
             var query = from application in applications
                         join talent in talents on application.TalentId equals talent.Id
                         join user in users on talent.UserId equals user.Id
-                        select new ApplicationDataDto
+                        select new AdminApplicationDataDto
                         {
                             Id = application.Id,
                             JobId = job.Id,
@@ -83,11 +83,15 @@ namespace PathFinder.Application.Helpers
                             JobDescription = job.Description,
                             JobStatus = job.Status.GetDescription(),
                             TalentId = application.TalentId,
-                            JobType = job.EmploymentType.GetDescription()
+                            JobType = job.EmploymentType.GetDescription(),
+                            ApplicationStatus = application.Status.GetDescription(),
+                            IsEligible = application.IsEligible,
+                            Threshold = application.AttainedThreshold,
                         };
 
             return query
-                .OrderByDescending(a => a.ApplicationDate);
+                .OrderByDescending(ap => ap.Threshold)
+                .ThenByDescending(a => a.ApplicationDate);
         }
 
         public static IQueryable<ApplicationDataDto> AsApplicationsDto(this IQueryable<JobApplication> applications,
@@ -107,7 +111,8 @@ namespace PathFinder.Application.Helpers
                             JobDescription = job.Description,
                             JobStatus = job.Status.GetDescription(),
                             TalentId = application.TalentId,
-                            JobType = job.EmploymentType.GetDescription()
+                            JobType = job.EmploymentType.GetDescription(),
+                            ApplicationStatus = application.Status.GetDescription()
                         };
 
             return query

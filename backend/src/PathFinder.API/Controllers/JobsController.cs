@@ -7,6 +7,7 @@ using PathFinder.API.Requests.Jobs;
 using PathFinder.Application.DTOs;
 using PathFinder.Application.Exceptions;
 using PathFinder.Application.Interfaces;
+using PathFinder.Domain.Enums;
 
 namespace PathFinder.API.Controllers
 {
@@ -217,7 +218,7 @@ namespace PathFinder.API.Controllers
                 return ProcessError(response);
             }
 
-            return Ok(response.GetResult<Paginator<ApplicationDataDto>>());
+            return Ok(response.GetResult<Paginator<AdminApplicationDataDto>>());
         }
 
         /// <summary>
@@ -264,6 +265,67 @@ namespace PathFinder.API.Controllers
             }
 
             return Ok(response.GetResult<ApplicationDataDto>());
+        }
+
+       /// <summary>
+       /// Gets summary data for jobs
+       /// </summary>
+       /// <param name="id"></param>
+       /// <returns></returns>
+        [HttpGet("{id}/summary")]
+        [Authorize(Roles = "Admin, Manager")]
+        [ProducesResponseType(typeof(JobDetailsForDashboardDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> JobSummaryForDashboard([FromRoute] Guid id)
+        {
+            var response = await _service.Job
+                .GetJobForDashboard(id);
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<JobDetailsForDashboardDto>());
+        }
+
+        /// <summary>
+        /// Change application status
+        /// </summary>
+        /// <param name="applicationId"></param>
+        /// <param name="status"> Valid statuses: 
+        /// <list type="bullet">
+        /// <item><description><c>In Review - 1</c></description></item>
+        /// <item><description><c>Interviewing - 2</c></description></item>
+        /// <item><description><c>Interviewed - 3</c></description></item>
+        /// <item><description><c>Offer Extended - 4</c></description></item>
+        /// <item><description><c>Hired - 5</c></description></item>
+        /// <item><description><c>Rejected - 6</c></description></item>
+        /// </list>
+        /// </param>
+        /// <returns></returns>
+        [HttpPatch("applications/{applicationId}/{status}")]
+        [Authorize(Roles = "Admin, Manager")]
+        [ProducesResponseType(typeof(ApplicationDataDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ChangeStatus([FromRoute] Guid applicationId,
+                                                        [FromRoute] JobApplicationStatus status)
+        {
+            var response = await _service.Job
+                .ChangeApplicationStatus(new PathFinder.Application.Commands.Jobs.ApplicationStatusCommand
+                {
+                    ApplicationId = applicationId,
+                    NewStatus = status
+                });
+            if (!response.Success)
+            {
+                return ProcessError(response);
+            }
+
+            return Ok(response.GetResult<string>());
         }
     }
 }
