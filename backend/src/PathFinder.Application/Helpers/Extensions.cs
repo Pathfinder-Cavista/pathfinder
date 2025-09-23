@@ -53,6 +53,11 @@ namespace PathFinder.Application.Helpers
             return list is not null && list.Any();
         }
 
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> list)
+        {
+            return list is null || !list.Any();
+        }
+
         public static DateTime ToDayEnd(this DateTime date, bool isUtc = true)
         {
             return isUtc ? new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, DateTimeKind.Utc) :

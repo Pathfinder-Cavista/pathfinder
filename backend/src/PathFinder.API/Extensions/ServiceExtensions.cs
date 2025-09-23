@@ -31,6 +31,7 @@ namespace PathFinder.API.Extensions
             services.ConfigureHangfire(configuration)
                 .RegisterDbContext(connectionString)
                 .AddScoped<IUploadService, UploadService>()
+                .AddScoped<IEligibilityService, EligibilityService>()
                 .AddScoped<IRepositoryManager, RepositoryManager>()
                 .AddScoped<IServiceManager, ServiceManager>()
                 .ConfigureSwaggerDocs()

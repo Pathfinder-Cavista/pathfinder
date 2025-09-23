@@ -9,10 +9,12 @@ namespace PathFinder.Application.Interfaces
     public interface IJobService
     {
         Task<ApiBaseResponse> ApplyAsync(Guid id);
+        Task<ApiBaseResponse> ChangeApplicationStatus(ApplicationStatusCommand command);
         Task<ApiBaseResponse> DeprecateJobAsync(Guid id);
         Task<ApiBaseResponse> GetApplicationAsync(Guid applicationId, Guid jobId);
         Task<ApiBaseResponse> GetByIdAsync(Guid id);
         Task<ApiBaseResponse> GetJobApplicationsAsync(ApplicationQueries queries);
+        Task<ApiBaseResponse> GetJobForDashboard(Guid id);
         ApiBaseResponse GetPaginatedJobs(JobQuery query);
         Task<ApiBaseResponse> GetTalentJobApplicationsAsync(PageQuery queries);
         Task<ApiBaseResponse> PatchJobAsync(PatchJobCommand command);

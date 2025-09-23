@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Commands.Jobs;
@@ -13,7 +14,13 @@ using PathFinder.Application.Validations.Jobs;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
+using System.Buffers.Text;
+using System.Reflection;
+using System.Runtime.Intrinsics.X86;
+using System.Xml.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PathFinder.Application.Features
 {
@@ -22,14 +29,17 @@ namespace PathFinder.Application.Features
         private readonly IRepositoryManager _repository;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEligibilityService _eligibility;
 
         public JobService(IRepositoryManager repository,
                           IHttpContextAccessor contextAccessor,
-                          UserManager<AppUser> userManager)
+                          UserManager<AppUser> userManager,
+                          IEligibilityService eligibility)
         {
             _repository = repository;
             _contextAccessor = contextAccessor;
             _userManager = userManager;
+            _eligibility = eligibility;
         }
 
         public async Task<ApiBaseResponse> PostJobAsync(PostJobCommand command)
@@ -185,6 +195,62 @@ namespace PathFinder.Application.Features
             return new OkResponse<JobDetailDto>(data);
         }
 
+        public async Task<ApiBaseResponse> GetJobForDashboard(Guid id)
+        {
+            var jobs = await _repository.Job
+                .GetQueryable(_ => true).ToListAsync();
+
+            var job = await _repository.Job
+                .GetQueryable(j => j.Id == id && !j.IsDeprecated)
+                .Include(j => j.RequiredSkills)
+                .Include(j => j.Requirements)
+                .FirstOrDefaultAsync();
+
+            if (job == null)
+            {
+                return new NotFoundResponse("Job record not found");
+            }
+
+            var recruiter = await _userManager.Users
+                .Include(u => u.Recruiter)
+                .FirstOrDefaultAsync(u => u.Recruiter != null && u.Recruiter.Id == job.RecruiterId);
+
+            var requirements = job.Requirements
+                .Select(r => r.Requirement)
+                .ToList();
+
+            var skillId = job.RequiredSkills
+                .Select(j => j.SkillId)
+                .ToList();
+
+            var skills = await _repository.Skill
+                .AsQueryable(s => skillId.Contains(s.Id))
+                .Select(s => s.Name).ToListAsync();
+
+            var applications = await _repository.Application
+                .AsQueryable(a => a.JobId == job.Id)
+                .ToListAsync();
+
+            var interviewedCount = applications
+                .LongCount(ap => ap.Status == JobApplicationStatus.Interviewed || 
+                    ap.Status == JobApplicationStatus.OfferExtended || 
+                    ap.Status == JobApplicationStatus.Hired);
+            var eligibleCount = applications
+                .LongCount(ap => ap.IsEligible);
+            var hiredCount = applications
+                .LongCount(ap => ap.Status == JobApplicationStatus.Hired);
+
+            return new OkResponse<JobDetailsForDashboardDto>(
+                JobDetailsForDashboardDto.FromEntity(job, requirements, skills, new ApplicationSummary
+                {
+                    Recruiter = $"{recruiter?.FirstName} {recruiter?.LastName}",
+                    Applicants = applications.LongCount(),
+                    Eligible = eligibleCount,
+                    Interviewed = interviewedCount,
+                    Hired = hiredCount
+                }));
+        }
+
         public ApiBaseResponse GetPaginatedJobs(JobQuery query)
         {
             var jobs = _repository.Job
@@ -248,6 +314,8 @@ namespace PathFinder.Application.Features
 
             await _repository.Application.ApplyAsync(application);
             // TODO: Alert the user and the Recruiter
+            BackgroundJob.Enqueue<IEligibilityService>(hf 
+                => hf.EvaluateEligibility(job.Id, application.TalentId, 0.7));
             return new OkResponse<ApplicationDto>(new ApplicationDto(job.Id, application.Id));
         }
 
@@ -319,7 +387,7 @@ namespace PathFinder.Application.Features
                 .AsApplicationsDto(job, users, talents)
                 .Paginate(queries.Page, queries.Size);
 
-            return new OkResponse<Paginator<ApplicationDataDto>>(applications);
+            return new OkResponse<Paginator<AdminApplicationDataDto>>(applications);
         }
 
         public async Task<ApiBaseResponse> GetTalentJobApplicationsAsync(PageQuery queries)
@@ -345,7 +413,66 @@ namespace PathFinder.Application.Features
             return new OkResponse<Paginator<ApplicationDataDto>>(applications);
         }
 
+        public async Task<ApiBaseResponse> ChangeApplicationStatus(ApplicationStatusCommand command)
+        {
+            if(!Enum.IsDefined(typeof(JobApplicationStatus), command.NewStatus))
+            {
+                return new BadRequestResponse("Invalid application status");
+            }
+
+            var application = await _repository.Application
+                .GetAsync(ap => ap.Id == command.ApplicationId, true);
+            if(application == null)
+            {
+                return new NotFoundResponse("Application record not found");
+            }
+
+            if(command.NewStatus == JobApplicationStatus.Applied 
+                || command.NewStatus == JobApplicationStatus.Withdrawn || 
+                application.Status > command.NewStatus)
+            {
+                return new BadRequestResponse($"You can not change the application status to {command.NewStatus.GetDescription()}");
+            }
+
+            application.Status = command.NewStatus;
+            application.ModifiedAt = DateTime.UtcNow;
+            await _repository.Application.EditAsync(application);
+
+            switch (command.NewStatus)
+            {
+                case JobApplicationStatus.Interviewing:
+                    // TODO: Send interview invite to the user
+                    break;
+                case JobApplicationStatus.OfferExtended:
+                    //TODO: Send notice of offer to the Applicant
+                    break;
+                case JobApplicationStatus.Rejected:
+                    //TODO: Send rejection mail to talent
+                    break;
+            }
+
+            return new OkResponse<string>($"Application status changed to {command.NewStatus.GetDescription()}");
+        }
+
         #region Private Methods
+        private async Task RecalculateForJobAsync(Guid jobId)
+        {
+            var job = await _repository.Job
+                .GetAsync(j => j.Id == jobId && !j.IsDeprecated);
+
+            if (job == null) return;
+
+            var applications = await _repository.Application
+                .AsQueryable(a => a.JobId == job.Id)
+                .ToListAsync();
+
+            foreach (var app in applications)
+            {
+                BackgroundJob.Enqueue<IEligibilityService>(hf
+                    => hf.EvaluateEligibility(job.Id, app.TalentId, 0.7));
+            }
+        }
+
         private async Task UpdateJobRequirements(Guid jobId, List<string> requirements)
         {
             var existingRequirements = await _repository.JobRequirement
@@ -385,8 +512,15 @@ namespace PathFinder.Application.Features
 
             var allSkills = existingSkills.Concat(newSkills).ToList();
 
-            return isForNewJob ? AddNewJobSkills(jobId, allSkills) :
+            var jobSkills = isForNewJob ? AddNewJobSkills(jobId, allSkills) :
                 await UpdateJobSkills(jobId, allSkills);
+
+            if(!isForNewJob && missingNames.Any())
+            {
+                await RecalculateForJobAsync(jobId);
+            }
+
+            return jobSkills;
         }
 
         private List<JobSkill> AddNewJobSkills(Guid jobId, List<Skill> skills)

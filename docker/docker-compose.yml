@@ -18,6 +18,9 @@ services:
       - JwtSettings__Issuer=http://localhost:5005
       - JwtSettings__Audience=pathfinder-talent-data-tracker
       - JwtSettings__Expires=1
+      - Cloudinary__ApiKey=placeholder
+      - Cloudinary__CloudName=placeholder
+      - Cloudinary__Secret=placeholder
     depends_on:
       - db
     networks:
