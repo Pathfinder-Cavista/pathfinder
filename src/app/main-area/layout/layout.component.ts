@@ -5,7 +5,7 @@ import { filter, Subscription } from 'rxjs';
 import { NgClass } from '@angular/common';
 
 @Component({
-  selector: 'app-layout.component',
+  selector: 'app-layout',
   imports: [
     RouterOutlet,
     RouterLink,
