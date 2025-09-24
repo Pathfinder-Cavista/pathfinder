@@ -22,12 +22,14 @@ namespace PathFinder.Application.DTOs
         public static JobDetailsForDashboardDto FromEntity(Job job,
                                                            List<string> requirements,
                                                            List<string> skills,
-                                                           ApplicationSummary summary)
+                                                           ApplicationSummary summary,
+                                                           string recruiterName)
         {
             var data = new JobDetailsForDashboardDto
             {
                 Id = job.Id,
                 RecruiterId = job.RecruiterId,
+                RecruiterName = recruiterName,
                 Title = job.Title,
                 Status = job.Status.GetDescription(),
                 Type = job.EmploymentType.GetDescription(),

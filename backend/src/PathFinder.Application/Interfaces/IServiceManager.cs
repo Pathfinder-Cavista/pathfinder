@@ -4,5 +4,6 @@
     {
         IAccountService Account {  get; }
         IJobService Job { get; }
+        IDataloadService Dataload { get; }
     }
 }

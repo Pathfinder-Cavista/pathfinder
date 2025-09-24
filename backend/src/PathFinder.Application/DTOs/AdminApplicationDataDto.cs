@@ -4,8 +4,6 @@ namespace PathFinder.Application.DTOs
 {
     public class AdminApplicationDataDto
     {
-        private string eligibilityText = "";
-
         public Guid Id { get; set; }
         public Guid JobId { get; set; }
         public string ApplicantFullName { get; set; } = string.Empty;

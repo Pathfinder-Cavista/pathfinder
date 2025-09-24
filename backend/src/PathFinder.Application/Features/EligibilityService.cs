@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Helpers;
 using PathFinder.Application.Interfaces;
+using PathFinder.Domain.Entities;
 using PathFinder.Domain.Interfaces;
 
 namespace PathFinder.Application.Features
@@ -73,6 +74,31 @@ namespace PathFinder.Application.Features
             application.IsEligible = percentage >= threshold;
             application.AttainedThreshold = percentage;
             await _repository.Application.EditAsync(application);
+        }
+
+        public async Task<List<Skill>> HandleSkillsUpdate(List<string> talentSkills)
+        {
+            var normalizedNames = talentSkills.Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var existingSkills = await _repository.Skill
+                .AsQueryable(s => normalizedNames.Contains(s.Name))
+                .ToListAsync();
+
+            var missingNames = normalizedNames
+                .Except(existingSkills.Select(s => s.Name), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var newSkills = missingNames.Select(name => new Skill
+            {
+                Name = name.CapitalizeFirstLetterOnly(),
+            }).ToList();
+
+            await _repository.Skill.AddRangeAsync(newSkills);
+
+            var allSkills = existingSkills.Concat(newSkills).ToList();
+            return allSkills;
         }
     }
 }

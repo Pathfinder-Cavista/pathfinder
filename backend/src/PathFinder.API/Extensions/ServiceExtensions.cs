@@ -1,7 +1,6 @@
 ﻿using Hangfire;
 using Hangfire.Console;
 using Hangfire.PostgreSql;
-using Hangfire.RecurringJobExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -69,7 +68,6 @@ namespace PathFinder.API.Extensions
                         opt.UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"));
                     })
                     .UseConsole()
-                    .UseRecurringJob(typeof(IRecurringJobService))
                     .UseFilter(new AutomaticRetryAttribute()
                     {
                         Attempts = 5,

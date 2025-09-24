@@ -6,7 +6,7 @@ namespace PathFinder.Domain.Enums
     {
         [Description(".png|.jpg|.jpeg")]
         Image,
-        [Description(".pdf|.doc|.docx")]
+        [Description(".pdf|.doc|.docx|.xls|.xlsx")]
         Document
     }
 }

@@ -14,13 +14,6 @@ using PathFinder.Application.Validations.Jobs;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
-using System.Buffers.Text;
-using System.Reflection;
-using System.Runtime.Intrinsics.X86;
-using System.Xml.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PathFinder.Application.Features
 {
@@ -29,17 +22,14 @@ namespace PathFinder.Application.Features
         private readonly IRepositoryManager _repository;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IEligibilityService _eligibility;
 
         public JobService(IRepositoryManager repository,
                           IHttpContextAccessor contextAccessor,
-                          UserManager<AppUser> userManager,
-                          IEligibilityService eligibility)
+                          UserManager<AppUser> userManager)
         {
             _repository = repository;
             _contextAccessor = contextAccessor;
             _userManager = userManager;
-            _eligibility = eligibility;
         }
 
         public async Task<ApiBaseResponse> PostJobAsync(PostJobCommand command)
@@ -243,12 +233,11 @@ namespace PathFinder.Application.Features
             return new OkResponse<JobDetailsForDashboardDto>(
                 JobDetailsForDashboardDto.FromEntity(job, requirements, skills, new ApplicationSummary
                 {
-                    Recruiter = $"{recruiter?.FirstName} {recruiter?.LastName}",
                     Applicants = applications.LongCount(),
                     Eligible = eligibleCount,
                     Interviewed = interviewedCount,
                     Hired = hiredCount
-                }));
+                }, $"{recruiter?.FirstName} {recruiter?.LastName}"));
         }
 
         public ApiBaseResponse GetPaginatedJobs(JobQuery query)
