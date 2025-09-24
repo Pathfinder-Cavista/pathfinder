@@ -80,7 +80,8 @@ namespace PathFinder.Application.Features
         public async Task LoadDataAsync(string filePath, Guid recruiterId, PerformContext context)
         {
             context.WriteLine($"Reading file content from path: {filePath}");
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            byte[] bytes = File.ReadAllBytes(filePath);
+            using var stream = new MemoryStream(bytes);
             if(stream.Length <= 0)
             {
                 context.WriteLine("Invalid stream length.");
@@ -143,6 +144,7 @@ namespace PathFinder.Application.Features
                 var user = users.FirstOrDefault(u => u.UserId == application.UserId);
                 if(job != default && user != default && user.User.Talent != null)
                 {
+                    var (Eligible, Score) = EvaluateEligibility(application, [.. job.Job.RequiredSkills], [.. user.User.Talent.Skills]);
                     result.Add(new JobApplication
                     {
                         ResumeUrl = user.User.Talent.ResumeUrl,
@@ -150,8 +152,8 @@ namespace PathFinder.Application.Features
                         TalentId = user.User.Talent.Id,
                         CreatedAt = application.ApplicationDate.ToDayEnd(),
                         Status = application.Status,
-                        IsEligible = application.Status > JobApplicationStatus.Interviewing && application.Status != JobApplicationStatus.Rejected,
-                        AttainedThreshold = (application.Status > JobApplicationStatus.Interviewing && application.Status != JobApplicationStatus.Rejected) ? 0.7 : 0.65
+                        IsEligible = Eligible,
+                        AttainedThreshold = Score
                     });
                 }
             }
@@ -207,6 +209,24 @@ namespace PathFinder.Application.Features
             }
 
             return result;
+        }
+
+        private (bool Eligible, double Score) EvaluateEligibility(DataloadJobApplication application,
+                                                                  List<JobSkill> jobSkills,
+                                                                  List<TalentSkill> talentSkills,
+                                                                  double threshold = 0.7)
+        {
+            var eligible = (application.Status >= JobApplicationStatus.Interviewing && application.Status != JobApplicationStatus.Rejected);
+            var score = eligible ? threshold : 0.0;
+
+            var matches = jobSkills.Count(s
+                => talentSkills.Select(ts => ts.SkillId).Contains(s.SkillId));
+
+            var percentage = (double)matches / jobSkills.Count;
+            percentage = percentage > score ? percentage : score;
+            eligible = percentage >= threshold;
+            score = percentage;
+            return (eligible, score);
         }
         #endregion
     }

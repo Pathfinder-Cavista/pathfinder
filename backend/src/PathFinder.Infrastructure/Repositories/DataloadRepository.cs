@@ -27,10 +27,9 @@ namespace PathFinder.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
-                Console.WriteLine(ex.Message);
                 throw;
             }
         }
