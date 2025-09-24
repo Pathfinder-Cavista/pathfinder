@@ -58,6 +58,7 @@ namespace PathFinder.Infrastructure.Persistence
                 .IsUnique();
 
             builder.ApplyConfiguration(new RoleConfiguration());
+            builder.ApplyConfiguration(new HolidayConfiguration());
         }
     }
 }

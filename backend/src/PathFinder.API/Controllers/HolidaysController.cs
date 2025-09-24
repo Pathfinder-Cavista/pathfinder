@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PathFinder.API.Controllers.Extensions;
+using PathFinder.API.Requests;
 using PathFinder.Application.DTOs;
 using PathFinder.Application.Exceptions;
 using PathFinder.Application.Interfaces;
@@ -31,7 +32,7 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.Holiday.GetHolidayList();
-            if (result.Success)
+            if (!result.Success)
             {
                 return ProcessError(result);
             }
@@ -42,6 +43,7 @@ namespace PathFinder.API.Controllers
         /// <summary>
         /// Adds a holiday
         /// </summary>
+        /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -52,7 +54,7 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> Post(CreateHolidayCommand command)
         {
             var result = await _service.Holiday.AddHolidayAsync(command);
-            if (result.Success)
+            if (!result.Success)
             {
                 return ProcessError(result);
             }
@@ -63,17 +65,27 @@ namespace PathFinder.API.Controllers
         /// <summary>
         /// Updates a holiday record
         /// </summary>
+        /// <param name="id"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(EntityIdDto), 200)]
         [ProducesResponseType(typeof(ErrorResponse), 401)]
         [ProducesResponseType(typeof(ErrorResponse), 403)]
         [ProducesResponseType(typeof(ErrorResponse), 500)]
-        public async Task<IActionResult> Put(UpdateHolidayCommand command)
+        public async Task<IActionResult> Put([FromRoute] Guid id, HolidayWriteRequest command)
         {
-            var result = await _service.Holiday.UpdateHolidayAsync(command);
-            if (result.Success)
+            var result = await _service.Holiday.UpdateHolidayAsync(new UpdateHolidayCommand
+            {
+                Id= id,
+                Name = command.Name,
+                Date = command.Date,
+                IsRecurring = command.IsRecurring,
+                Country = command.Country
+            });
+
+            if (!result.Success)
             {
                 return ProcessError(result);
             }
@@ -84,8 +96,9 @@ namespace PathFinder.API.Controllers
         /// <summary>
         /// Deletes a holiday record
         /// </summary>
+        /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         [ProducesResponseType(typeof(ErrorResponse), 401)]
@@ -94,7 +107,7 @@ namespace PathFinder.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _service.Holiday.DeleteHolidayAsync(id);
-            if (result.Success)
+            if (!result.Success)
             {
                 return ProcessError(result);
             }

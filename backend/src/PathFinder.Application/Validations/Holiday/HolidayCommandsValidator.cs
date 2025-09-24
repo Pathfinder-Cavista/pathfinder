@@ -11,7 +11,13 @@ namespace PathFinder.Application.Validations.Holiday
             RuleFor(x => x.Name).NotEmpty()
                 .WithMessage("Holiday name is required");
             RuleFor(x => x)
-                .Must(args => args.Date.IsValid()).WithMessage("Please enter a valid date");
+                .Must(args => ValidHolidayDate(args.Date, args.IsRecurring)).WithMessage("Please enter a valid date");
+        }
+
+        private bool ValidHolidayDate(DateTime date, bool recurring)
+        {
+            return !recurring ? date.Date >= DateTime.UtcNow.Date && date.IsValid() :
+                date.IsValid();
         }
     }
 }

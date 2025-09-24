@@ -6,6 +6,7 @@ using PathFinder.API.Filters;
 using PathFinder.Application.Helpers;
 using PathFinder.Application.Mappers;
 using PathFinder.Domain.Entities;
+using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
 
 namespace PathFinder.API.Extensions

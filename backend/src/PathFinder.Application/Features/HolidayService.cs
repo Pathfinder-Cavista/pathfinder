@@ -85,7 +85,8 @@ namespace PathFinder.Application.Features
                     Date = h.IsRecurring ?
                         new DateTime(DateTime.Today.Year, h.Date.Month, h.Date.Day) :
                         h.Date.Date,
-                    IsRecurring = h.IsRecurring
+                    IsRecurring = h.IsRecurring,
+                    Country = h.Country
                 })
                 .ToList();
 

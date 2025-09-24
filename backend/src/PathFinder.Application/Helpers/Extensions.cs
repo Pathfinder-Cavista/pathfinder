@@ -103,6 +103,11 @@ namespace PathFinder.Application.Helpers
                 new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
         }
 
+        public static DateTime ToUtcDate(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, DateTimeKind.Utc);
+        }
+
         public static DateTime ParseToDate(this string dateString)
         {
             DateTime date = DateTime.UtcNow;
