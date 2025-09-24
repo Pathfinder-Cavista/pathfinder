@@ -14,13 +14,14 @@ using PathFinder.Application.Validations.Jobs;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
+using System.Security.Claims;
 
 namespace PathFinder.Application.Features
 {
     public class JobService : IJobService
     {
         private readonly IRepositoryManager _repository;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ClaimsPrincipal? _claim;
         private readonly UserManager<AppUser> _userManager;
 
         public JobService(IRepositoryManager repository,
@@ -28,7 +29,7 @@ namespace PathFinder.Application.Features
                           UserManager<AppUser> userManager)
         {
             _repository = repository;
-            _contextAccessor = contextAccessor;
+            _claim = contextAccessor.HttpContext?.User;
             _userManager = userManager;
         }
 
@@ -41,7 +42,7 @@ namespace PathFinder.Application.Features
             }
 
             var loggedInUserId = AccountHelpers
-                .GetLoggedInUserId(_contextAccessor.HttpContext.User);
+                .GetLoggedInUserId(_claim);
             if (string.IsNullOrWhiteSpace(loggedInUserId))
             {
                 return new ForbiddenResponse("You're not authorized to perform this operation.");
@@ -76,8 +77,7 @@ namespace PathFinder.Application.Features
                 return new BadRequestResponse(validator.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid inputs");
             }
 
-            var userClaim = _contextAccessor.HttpContext.User;
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(userClaim);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
 
             if (string.IsNullOrWhiteSpace(loggedInUserId))
             {
@@ -98,7 +98,7 @@ namespace PathFinder.Application.Features
                 return new NotFoundResponse("Job record not found");
             }
 
-            if(recruiter.Id != existingJob.RecruiterId && !AccountHelpers.IsInRole(userClaim, Roles.Admin.GetDescription()))
+            if(recruiter.Id != existingJob.RecruiterId && !AccountHelpers.IsInRole(_claim, Roles.Admin.GetDescription()))
             {
                 return new ForbiddenResponse("You don't have enough permissions to perform this operation");
             }
@@ -116,8 +116,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> DeprecateJobAsync(Guid id)
         {
-            var userClaim = _contextAccessor.HttpContext.User;
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(userClaim);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
 
             if (string.IsNullOrWhiteSpace(loggedInUserId))
             {
@@ -138,7 +137,7 @@ namespace PathFinder.Application.Features
                 return new NotFoundResponse("Job record not found");
             }
 
-            if (recruiter.Id != existingJob.RecruiterId && !AccountHelpers.IsInRole(userClaim, Roles.Admin.GetDescription()))
+            if (recruiter.Id != existingJob.RecruiterId && !AccountHelpers.IsInRole(_claim, Roles.Admin.GetDescription()))
             {
                 return new ForbiddenResponse("You don't have enough permissions to perform this operation");
             }
@@ -256,7 +255,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> ApplyAsync(Guid id)
         {
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if(string.IsNullOrWhiteSpace(loggedInUserId))
             {
                 return new BadRequestResponse("Invalid user login.");
@@ -311,10 +310,10 @@ namespace PathFinder.Application.Features
         public async Task<ApiBaseResponse> GetApplicationAsync(Guid applicationId, Guid jobId)
         {
             var isATalent = AccountHelpers
-                .IsInRole(_contextAccessor.HttpContext.User, Roles.Talent.GetDescription());
+                .IsInRole(_claim, Roles.Talent.GetDescription());
 
             var talentId = Guid.Empty;
-            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var userId = AccountHelpers.GetLoggedInUserId(_claim);
             if (isATalent)
             {
                 var talent = await _repository.TalentProfile
@@ -381,7 +380,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> GetTalentJobApplicationsAsync(PageQuery queries)
         {
-            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var userId = AccountHelpers.GetLoggedInUserId(_claim);
             var user = await _userManager.Users
                 .Include(u => u.Talent)
                 .FirstOrDefaultAsync(u => u.Id == userId && !string.IsNullOrEmpty(userId));

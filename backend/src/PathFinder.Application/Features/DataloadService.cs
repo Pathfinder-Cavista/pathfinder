@@ -22,6 +22,8 @@ namespace PathFinder.Application.Features
         private readonly UserManager<AppUser> _userManager;
         private readonly IEligibilityService _eligibility;
         private readonly IRepositoryManager _repository;
+        private readonly PasswordHasher<AppUser> _passwordHasher;
+        private const string _pass = "P@55w0rd";
         private const string dummy_cv = "https://res.cloudinary.com/otrprojs/raw/upload/v1758646102/documents/f9091e58f7554877848462614152576d.pdf";
 
         public DataloadService(UserManager<AppUser> userManager,
@@ -33,6 +35,7 @@ namespace PathFinder.Application.Features
             _principal = contextAccessor.HttpContext?.User;
             _eligibility = eligibility;
             _repository = repository;
+            _passwordHasher = new PasswordHasher<AppUser>();
         }
 
         public async Task<ApiBaseResponse> RunDataloadAsync(IFormFile file)
@@ -199,6 +202,7 @@ namespace PathFinder.Application.Features
                 var newUser = UserCommandMapper.ToAppUser(user, dummy_cv);
                 if(newUser != null && newUser.Talent != null)
                 {
+                    newUser.PasswordHash = _passwordHasher.HashPassword(newUser, _pass);
                     newUser.Talent.Skills = [.. userSkills.Select(s => new TalentSkill
                     {
                         SkillId = s.Id,

@@ -26,7 +26,6 @@ namespace PathFinder.Application.Features
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        //private readonly IHttpContextAccessor _contextAccessor;
         private readonly ClaimsPrincipal? _claim;
         private readonly IRepositoryManager _repository;
         private readonly IUploadService _uploadService;

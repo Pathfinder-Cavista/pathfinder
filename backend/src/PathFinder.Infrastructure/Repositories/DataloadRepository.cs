@@ -1,4 +1,8 @@
-﻿using PathFinder.Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using PathFinder.Application.Helpers;
+using PathFinder.Domain.Entities;
+using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
 
@@ -25,6 +29,24 @@ namespace PathFinder.Infrastructure.Repositories
                 _context.Users.AddRange(users);
                 _context.Applications.AddRange(applications);
                 await _context.SaveChangesAsync();
+
+                var talentRole = _context.Roles.FirstOrDefault(r => r.Name == Roles.Talent.GetDescription());
+                if(talentRole != null)
+                {
+                    var userRoles = new List<IdentityUserRole<string>>();
+                    foreach(var user in users)
+                    {
+                        userRoles.Add(new IdentityUserRole<string>
+                        {
+                            UserId = user.Id,
+                            RoleId = talentRole.Id
+                        });
+                    }
+
+                    await _context.UserRoles.AddRangeAsync(userRoles);
+                    await _context.SaveChangesAsync();
+                }
+
                 await transaction.CommitAsync();
             }
             catch (Exception)
