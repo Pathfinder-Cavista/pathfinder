@@ -1,6 +1,7 @@
-﻿using PathFinder.Application.Commands.Accounts;
+﻿using DocumentFormat.OpenXml.Drawing;
+using PathFinder.Application.Commands.Accounts;
+using PathFinder.Application.DTOs;
 using PathFinder.Domain.Entities;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace PathFinder.Application.Mappers
 {
@@ -18,6 +19,30 @@ namespace PathFinder.Application.Mappers
                 EmailConfirmed = true,
                 UserName = registerCommand.Email
             };
+        }
+
+        public static AppUser ToAppUser(DataloadUserProfile dataloadUser, string cvUrl)
+        {
+            var user = new AppUser
+            {
+                FirstName = dataloadUser.FirstName,
+                LastName = dataloadUser.LastName,
+                Email = dataloadUser.Email,
+                PhoneNumber = dataloadUser.PhoneNumber,
+                EmailConfirmed = true,
+                UserName = dataloadUser.Email
+            };
+
+            user.Talent = new TalentProfile
+            {
+                Summary = dataloadUser.Summary,
+                Location = dataloadUser.City,
+                YearsOfExperience = dataloadUser.YearsOfExperience,
+                ResumeUrl = cvUrl,
+                UserId = user.Id,
+            };
+
+            return user;
         }
 
         public static void UpdateTalentProfile(AppUser user, TalentProfileUpdateCommand command, TalentProfile? profile)

@@ -3,7 +3,7 @@
     public class PageQuery
     {
         private int _minPage = 1;
-        private int _minSize = 5;
+        private int _minSize = 10;
         private int _maxSize = 50;
 
         public int Page 
@@ -13,9 +13,9 @@
         }
         public int Size 
         {
-            get => _maxSize;
-            set => _maxSize = value > _maxSize ? _maxSize : 
-                value < _minSize ? _minSize : value;
+            get => _minSize;
+            set => _minSize = value < _minSize ? _minSize : 
+                value > _maxSize ? _maxSize : value;
         }
     }
 }

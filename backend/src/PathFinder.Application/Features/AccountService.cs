@@ -26,7 +26,7 @@ namespace PathFinder.Application.Features
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ClaimsPrincipal? _claim;
         private readonly IRepositoryManager _repository;
         private readonly IUploadService _uploadService;
         private readonly JwtSettings _settings;
@@ -40,7 +40,7 @@ namespace PathFinder.Application.Features
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _contextAccessor = contextAccessor;
+            _claim = contextAccessor.HttpContext?.User;
             _repository = repository;
             _uploadService = uploadService;
             _settings = options.Value;
@@ -130,7 +130,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> GetLoggedInRecruiterDetails()
         {
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
                 return new ForbiddenResponse("User not authenticated");
@@ -158,7 +158,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> GetLoggedInTalentDetails()
         {
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
                 return new ForbiddenResponse("User not authenticated");
@@ -198,7 +198,7 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> UpdateRecruiterProfileAsync(RecruiterProfileUpdateCommand command)
         {
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
                 return new ForbiddenResponse("User not authenticated");
@@ -233,7 +233,7 @@ namespace PathFinder.Application.Features
                 return new BadRequestResponse(validator.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid inputs");
             }
 
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if (string.IsNullOrEmpty(loggedInUserId))
             {
                 return new ForbiddenResponse("User not authenticated");
@@ -264,13 +264,13 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> UploadProfileImage(IFormFile formFile)
         {
-            var validation = formFile.IsAValidImage(UploadMediaType.Image);
+            var validation = formFile.IsAValidFile(UploadMediaType.Image);
             if (!validation.Valid)
             {
                 return new BadRequestResponse(validation.Message);
             }
 
-            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var userId = AccountHelpers.GetLoggedInUserId(_claim);
             if(string.IsNullOrWhiteSpace(userId))
             {
                 return new ForbiddenResponse("Access denied.");
@@ -298,13 +298,13 @@ namespace PathFinder.Application.Features
 
         public async Task<ApiBaseResponse> UploadResumeAsync(IFormFile formFile)
         {
-            var validation = formFile.IsAValidImage(UploadMediaType.Document);
+            var validation = formFile.IsAValidFile(UploadMediaType.Document);
             if (!validation.Valid)
             {
                 return new BadRequestResponse(validation.Message);
             }
 
-            var userId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext.User);
+            var userId = AccountHelpers.GetLoggedInUserId(_claim);
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return new ForbiddenResponse("Access denied.");
@@ -488,7 +488,7 @@ namespace PathFinder.Application.Features
                 return (true, null);
             }
 
-            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_contextAccessor.HttpContext?.User);
+            var loggedInUserId = AccountHelpers.GetLoggedInUserId(_claim);
             if(string.IsNullOrEmpty(loggedInUserId))
             {
                 return (false, null);

@@ -1,4 +1,5 @@
 ﻿using PathFinder.Application.Commands.Jobs;
+using PathFinder.Application.DTOs;
 using PathFinder.Application.Helpers;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
@@ -20,6 +21,22 @@ namespace PathFinder.Application.Mappers
                 ClosingDate = command.DeadLine.HasValue ? command.DeadLine.Value.ToDayEnd() : null,
                 RecruiterId = recruiterId,
                 Status = command.PostNow ? JobStatus.Published : JobStatus.Draft
+            };
+        }
+
+        public static Job ToJobModel(DataloadJob dataloadJob, Guid recruiterId)
+        {
+            return new Job
+            {
+                Title = dataloadJob.Title,
+                Description = dataloadJob.Description,
+                Level = dataloadJob.Level,
+                EmploymentType = dataloadJob.Type,
+                Location = dataloadJob.Location,
+                CreatedAt = dataloadJob.DateOpened.ToDayEnd(),
+                ClosingDate = dataloadJob.DateClosed.HasValue ? dataloadJob.DateClosed.Value.ToDayEnd() : null,
+                RecruiterId = recruiterId,
+                Status = dataloadJob.Status
             };
         }
 

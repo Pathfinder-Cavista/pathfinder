@@ -12,6 +12,7 @@ namespace PathFinder.Application.Features
     {
         private readonly Lazy<IAccountService> _accountService;
         private readonly Lazy<IJobService> _jobService;
+        private readonly Lazy<IDataloadService> _dataloadService;
 
         public ServiceManager(UserManager<AppUser> userManager,
                               SignInManager<AppUser> signInManager,
@@ -25,10 +26,14 @@ namespace PathFinder.Application.Features
                 => new AccountService(userManager, signInManager, contextAccessor, repository, options, uploadService));
 
             _jobService = new Lazy<IJobService>(()
-                => new JobService(repository, contextAccessor, userManager, eligibility));
+                => new JobService(repository, contextAccessor, userManager));
+
+            _dataloadService = new Lazy<IDataloadService>(()
+                => new DataloadService(userManager, contextAccessor, eligibility, repository));
         }
 
         public IAccountService Account => _accountService.Value;
         public IJobService Job => _jobService.Value;
+        public IDataloadService Dataload => _dataloadService.Value;
     }
 }
