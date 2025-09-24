@@ -23,6 +23,11 @@ namespace PathFinder.Application.Helpers
             throw new ArgumentNullException(nameof(value));
         }
 
+        public static bool IsValid(this DateTime value)
+        {
+            return value != DateTime.MinValue && value < DateTime.MaxValue;
+        }
+
         public static T ParseEnum<T>(this string value) where T : struct, Enum
         {
             if (int.TryParse(value, out var num))

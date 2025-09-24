@@ -13,6 +13,7 @@
         IOrganizationRepository Organization { get; }
         IJobApplicationRepository Application { get; }
         IDataloadRepository Dataload { get; }
+        IHolidayRepository Holiday { get; }
         Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }

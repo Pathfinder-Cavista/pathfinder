@@ -17,6 +17,7 @@ namespace PathFinder.Infrastructure.Repositories
         private readonly Lazy<IOrganizationRepository> _organizationRepository;
         private readonly Lazy<IJobApplicationRepository> _jobApplicationRepository;
         private readonly Lazy<IDataloadRepository> _dataLoadRepository;
+        private readonly Lazy<IHolidayRepository> _holidayRepository;
 
         public RepositoryManager(AppDbContext dbContext) 
         {
@@ -54,6 +55,9 @@ namespace PathFinder.Infrastructure.Repositories
 
             _dataLoadRepository = new Lazy<IDataloadRepository>(() 
                 => new DataloadRepository(dbContext));
+
+            _holidayRepository = new Lazy<IHolidayRepository>(()
+                => new HolidayRepository(dbContext));
         }
 
         public ITokenRepository Token => _tokenRepository.Value;
@@ -67,6 +71,7 @@ namespace PathFinder.Infrastructure.Repositories
         public IOrganizationRepository Organization => _organizationRepository.Value;
         public IJobApplicationRepository Application => _jobApplicationRepository.Value;
         public IDataloadRepository Dataload => _dataLoadRepository.Value;
+        public IHolidayRepository Holiday => _holidayRepository.Value;
 
         public async Task SaveAsync(CancellationToken cancellationToken = default)
             => await _dbContext.SaveChangesAsync(cancellationToken);

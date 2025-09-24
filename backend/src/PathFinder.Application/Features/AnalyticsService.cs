@@ -25,12 +25,12 @@ namespace PathFinder.Application.Features
 
         public async Task<List<OpenRoleDurationDto>> GetOpenRoleDurationAsync()
         {
-            var holidays = new HashSet<DateTime>
-            {
-                new DateTime(2025, 1, 1),
-                new DateTime(2025, 4, 18),
-                new DateTime(2025, 6, 12)
-            };
+            var holidays = (await _repository.Holiday
+                .AsQueryable(h => !h.IsDeprecated)
+                .ToListAsync())
+                .Select(h => h.IsRecurring ? 
+                    new DateTime(DateTime.Today.Year, h.Date.Month, h.Date.Day) : 
+                    h.Date.Date).ToHashSet();
 
             var jobs = await _repository.Job
                 .GetQueryable(j => !j.IsDeprecated && (j.Status == JobStatus.Published || j.Status == JobStatus.Closed))
