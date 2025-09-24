@@ -4,12 +4,50 @@ using PathFinder.Application.Helpers;
 using PathFinder.Application.Interfaces;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
+using System.Globalization;
 
 namespace PathFinder.Application.Features
 {
     public class AnalyticsService(IRepositoryManager repository) : IAnalyticsService
     {
         private readonly IRepositoryManager _repository = repository;
+
+        public async Task<double> GetAverageTimeToFillAsync()
+        {
+            var durations = await _repository.Job
+                .GetQueryable(j => !j.IsDeprecated && j.Status == JobStatus.Closed && j.ClosingDate.HasValue)
+                .Select(j => new { j.CreatedAt, j.ClosingDate })
+                .ToListAsync();
+
+            return durations
+                .Average(j => (j.ClosingDate!.Value - j.CreatedAt).TotalDays);
+        }
+
+        public async Task<List<OpenRoleDurationDto>> GetOpenRoleDurationAsync()
+        {
+            var holidays = new HashSet<DateTime>
+            {
+                new DateTime(2025, 1, 1),
+                new DateTime(2025, 4, 18),
+                new DateTime(2025, 6, 12)
+            };
+
+            var jobs = await _repository.Job
+                .GetQueryable(j => !j.IsDeprecated && (j.Status == JobStatus.Published || j.Status == JobStatus.Closed))
+                .Select(j => new { j.Id, j.Title, j.CreatedAt, j.ClosingDate, j.Status })
+                .ToListAsync();
+
+            var result = jobs.Select(j => new OpenRoleDurationDto
+            {
+                RoleId = j.Id,
+                RoleTitle = j.Title,
+                Status = j.Status,
+                StatusText = j.Status.GetDescription(),
+                OpenDays = GetBusinessDays(j.CreatedAt, j.ClosingDate ?? DateTime.Today, holidays)
+            }).ToList();
+
+            return result;
+        }
 
         public async Task<List<ApplicationPerJobDto>> GetApplicationsPerJobAsync()
         {
@@ -78,6 +116,34 @@ namespace PathFinder.Application.Features
                 .ToListAsync();
         }
 
+        public async Task<List<YearlyApplicationTrendsDto>> GetApplicationOvertimeAsync(int year)
+        {
+            year = year < DateTime.MinValue.Year || year > DateTime.MaxValue.Year ? DateTime.UtcNow.Year : year;
+            var monthlyTrend = await _repository.Application
+                .AsQueryable(a => !a.IsDeprecated && a.CreatedAt.Year == year)
+                .ToListAsync();
+
+            var data = monthlyTrend
+                .GroupBy(a => a.CreatedAt.Month)
+                .Select(grp => new YearlyApplicationTrendsDto
+                {
+                    MonthKey = grp.Key,
+                    Applications = grp.Count()
+                }).OrderBy(a => a.Month)
+                .ToList();
+
+            var fullTrend = Enumerable.Range(1, 12)
+                .GroupJoin(data, m => m, t => t.MonthKey,
+                    (m, t) => new YearlyApplicationTrendsDto
+                    {
+                        MonthKey = m,
+                        Month = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m),
+                        Applications = t.FirstOrDefault()?.Applications ?? 0
+                    }).OrderBy(a => a.MonthKey);
+
+            return [.. fullTrend];
+        }
+
         public async Task<List<HireRateByJobTypeDto>> GetHireRateByJobTypeAsync()
         {
             return await _repository.Application
@@ -91,5 +157,27 @@ namespace PathFinder.Application.Features
                     Hires = grp.Count()
                 }).ToListAsync();
         }
+
+        #region Private Methods
+        private static int GetBusinessDays(DateTime start, DateTime end, HashSet<DateTime> holidays)
+        {
+            int businessDays = 0;
+            for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
+            {
+                if(date.DayOfWeek is DayOfWeek.Saturday || date.DayOfWeek is DayOfWeek.Sunday)
+                {
+                    continue;
+                }
+
+                if (holidays.Contains(date.Date))
+                {
+                    continue;
+                }
+
+                businessDays++;
+            }
+            return businessDays;
+        }
+        #endregion
     }
 }
