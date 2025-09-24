@@ -23,6 +23,11 @@ namespace PathFinder.Application.Helpers
             throw new ArgumentNullException(nameof(value));
         }
 
+        public static bool IsValid(this DateTime value)
+        {
+            return value != DateTime.MinValue && value < DateTime.MaxValue;
+        }
+
         public static T ParseEnum<T>(this string value) where T : struct, Enum
         {
             if (int.TryParse(value, out var num))
@@ -96,6 +101,11 @@ namespace PathFinder.Application.Helpers
         {
             return isUtc ? new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, DateTimeKind.Utc) :
                 new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
+        }
+
+        public static DateTime ToUtcDate(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, DateTimeKind.Utc);
         }
 
         public static DateTime ParseToDate(this string dateString)

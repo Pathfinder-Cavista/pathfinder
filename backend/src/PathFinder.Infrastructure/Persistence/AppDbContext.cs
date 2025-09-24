@@ -17,6 +17,7 @@ namespace PathFinder.Infrastructure.Persistence
         public DbSet<JobSkill> JobSkills { get; set; }
         public DbSet<JobRequirement> JobRequirements { get; set; }
         public DbSet<Organization> Organizations { get; set; }
+        public DbSet<Holiday> Holidays { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 
             : base(options) { }
@@ -57,6 +58,7 @@ namespace PathFinder.Infrastructure.Persistence
                 .IsUnique();
 
             builder.ApplyConfiguration(new RoleConfiguration());
+            builder.ApplyConfiguration(new HolidayConfiguration());
         }
     }
 }
