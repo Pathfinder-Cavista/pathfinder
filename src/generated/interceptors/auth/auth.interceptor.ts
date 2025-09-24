@@ -16,7 +16,6 @@ const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
   const auth = inject(AuthService);
-  const router = inject(Router);
 
   const accessToken = auth.getAccessToken();
   let authReq = req;

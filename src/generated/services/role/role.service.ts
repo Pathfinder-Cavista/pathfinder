@@ -15,4 +15,8 @@ export class RoleService {
   allRoles() {
     return this.http.get<ApiResponseModel<PagedResponseModel<RoleDetailsModel>>>(`${this._apiBaseUrl}/api/jobs`);
   }
+
+  addRole(details: {}) {
+    return this.http.post<ApiResponseModel<any>>(`${this._apiBaseUrl}/api/jobs`, details);
+  }
 }
