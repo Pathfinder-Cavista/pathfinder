@@ -1,0 +1,22 @@
+
+@switch (status.toLowerCase())
+{
+  @case ('draft')
+  {
+    <span class="badge iq-bg-warning">{{ status }}</span>
+  }
+  
+  @case ('open')
+  {
+    <span class="badge iq-bg-primary">{{ status }}</span>
+  }
+  @case ('closed')
+  {
+    <span class="badge iq-bg-success">{{ status }}</span>
+  }
+  @case ('archived')
+  {
+    <span class="badge iq-bg-info">{{ status }}</span>
+  }
+
+}
