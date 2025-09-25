@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using PathFinder.API.Filters;
 using PathFinder.Application.DTOs;
 using PathFinder.Application.Exceptions;
 using PathFinder.Application.Interfaces;
@@ -8,6 +8,7 @@ namespace PathFinder.API.Controllers
 {
     [Route("api/analytics")]
     [ApiController]
+    [AnalyticsPermission]
     public class AnalyticsController : ControllerBase
     {
         private readonly IServiceManager _service;
@@ -18,7 +19,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("open-roles-durations")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<OpenRoleDurationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -29,7 +30,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("average-time-to-fill")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(double), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -40,7 +41,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("applications-per-job")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<ApplicationPerJobDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -51,7 +52,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("applications-by-location")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<ApplicationsByLocationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -62,7 +63,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("application-trend")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<ApplicationsOvertimeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -73,7 +74,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("application-trend/{year:int}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<YearlyApplicationTrendsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -84,7 +85,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("hire-rate-by-jobtype")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<HireRateByJobTypeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -95,7 +96,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("applications-by-status")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<ApplicationStatusDistributionDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -106,7 +107,7 @@ namespace PathFinder.API.Controllers
         }
 
         [HttpGet("jobstatus-distribution")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(List<JobStatusDistributionDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

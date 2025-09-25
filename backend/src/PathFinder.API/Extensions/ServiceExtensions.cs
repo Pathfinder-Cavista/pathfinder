@@ -36,7 +36,16 @@ namespace PathFinder.API.Extensions
                 .ConfigureSwaggerDocs()
                 .ConfigureJwt(configuration)
                 .ConfigureCors()
-                .ConfigureCloudinary(configuration);        
+                .ConfigureCloudinary(configuration)
+                .ConfigureAnalyticsSettings(configuration);        
+        }
+
+        private static IServiceCollection ConfigureAnalyticsSettings(this IServiceCollection services,
+                                                                        IConfiguration configuration)
+        {
+            var analyticsSettings = configuration.GetSection("Analytics");
+            return services
+                .Configure<AnalyticsSettings>(analyticsSettings);
         }
 
         private static IServiceCollection ConfigureCloudinary(this IServiceCollection services,
@@ -132,6 +141,29 @@ namespace PathFinder.API.Extensions
                             {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
+                opt.AddSecurityDefinition("X-Insights", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Name = "X-Insights",
+                    Type = SecuritySchemeType.ApiKey,
+                    Description = "Custom Header"
+                });
+
+                opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "X-Insights"
                             }
                         },
                         Array.Empty<string>()
