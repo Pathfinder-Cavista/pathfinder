@@ -59,6 +59,68 @@ android {
 dependencies {
     val lifecycle_version = "2.8.7"
 
+    implementation("androidx.navigation:navigation-runtime:2.7.6 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.navigation:navigation-compose:2.7.6  ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("com.google.dagger:hilt-android:2.56.2  ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.hilt:hilt-navigation-compose:1.2.0 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.hilt:hilt-navigation:1.2.0") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.navigation:navigation-common:2.7.6") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.fragment:fragment:1.5.1  ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.activity:activity:1.9.3  ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.activity:activity-ktx:1.9.3 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.customview:customview-poolingcontainer:1.0.0 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.core:core-ktx:1.15.0 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("  androidx.compose.material:material-icons-core-android:1.6.6 ") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.activity:activity-compose:1.9.3") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" androidx.compose.animation:animation-core-android:1.7.0") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation(" org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.annotation:annotation-jvm:1.9.1") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.annotation:annotation-experimental:1.4.1") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    implementation("androidx.annotation:annotation-experimental:1.4.1") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
