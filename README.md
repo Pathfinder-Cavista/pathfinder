@@ -48,6 +48,7 @@ cd pathfinder
 
 - Create a .env file in **pathfinder/docker** with variables like:
 
+```bash
 ConnectionStrings\_\_DefaultConnection=connectionstring
 HangfireSettings\_\_Password=dashboardpassword
 HangfireSettings\_\_UserName=dashboardusername
@@ -60,6 +61,7 @@ Cloudinary\_\_CloudName=cloudinary_cloudname
 Cloudinary\_\_Secret=cloudinary_secret
 Analytics\_\_Header=custom_header_name
 Analytics\_\_Value=custom_header_value
+```
 
 ### Start services via Docker Compose:
 
