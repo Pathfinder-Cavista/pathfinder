@@ -260,7 +260,7 @@ namespace PathFinder.Application.Features
                 await package.SaveAsAsync(stream);
                 stream.Position = 0;
 
-                var reportName = string.Format("{0}-{1}", report.Name, DateTime.Now.Ticks);
+                var reportName = string.Format("{0}-{1}", report.Name.Replace(" ", ""), DateTime.Now.Ticks);
                 var uploadResult = await _uploadService.UploadRawAsync(reportName, $"{reportName}.xlsx", stream);
                 if(uploadResult !=  null && !string.IsNullOrEmpty(uploadResult.Url))
                 {
