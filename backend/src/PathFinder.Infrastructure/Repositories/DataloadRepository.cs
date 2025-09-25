@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DocumentFormat.OpenXml.Vml.Office;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PathFinder.Application.Helpers;
 using PathFinder.Domain.Entities;
 using PathFinder.Domain.Enums;
 using PathFinder.Domain.Interfaces;
 using PathFinder.Infrastructure.Persistence;
+using System.Linq.Expressions;
 
 namespace PathFinder.Infrastructure.Repositories
 {
@@ -54,6 +56,33 @@ namespace PathFinder.Infrastructure.Repositories
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task AddReportAsync(Report report)
+        {
+            await _context.Reports.AddAsync(report);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Report>> GetReportsAsync(Expression<Func<Report, bool>> expression)
+        {
+            return await _context.Reports.AsQueryable()
+                .Where(expression)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+        }
+
+        public async Task<Report?> GetReportAsync(Expression<Func<Report, bool>> expression)
+        {
+            return await _context.Set<Report>()
+                .FirstOrDefaultAsync(expression);
+        }
+
+        public async Task EditReportAsync(Report report)
+        {
+            _context.Reports.Update(report);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using PathFinder.Application.DTOs;
+using PathFinder.Application.Responses;
 
 namespace PathFinder.Application.Interfaces
 {
     public interface IAnalyticsService
     {
+        Task<ApiBaseResponse> FetchCompletedReports();
+        Task<ApiBaseResponse> GenerateMetricsReportAsync(int currentYear);
         Task<List<ApplicationsOvertimeDto>> GetApplicationOvertimeAsync();
         Task<List<YearlyApplicationTrendsDto>> GetApplicationOvertimeAsync(int year);
         Task<List<ApplicationsByLocationDto>> GetApplicationsByLocationAsync();
