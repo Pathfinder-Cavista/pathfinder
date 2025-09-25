@@ -1,59 +1,80 @@
-# PathfinderWeb
+# Path Finder
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+This is a web-based Talent Application Tracker built with **Angular**. The app is designed to help the talent team to manage job roles, track applications, and visualize recruitment metrics through interactive dashboards and reports.
 
-## Development server
+This application is done as a submission of Group Path Finder for the Cavista Tech Staff Hackathon:
 
-To start a local development server, run:
+Team Members are
+1. Toba Ojo
+2. Osehiase Ehilen
+3. Chukwudi Ike-Nwako
+4. Folusho Onafowokan
+5. Shalom Gar
 
+---
+
+## 🚀 Features
+
+- **Dashboard Module**: View quick insights into role statistics and application counts.
+- **Roles Module**: Add new job roles, view existing ones, and manage their statuses.
+- **Reports Module**: View application trends and role performance through charts and visual summaries.
+- **Responsive UI**: Fully responsive and designed to work seamlessly across devices.
+
+---
+
+## 🛠️ Getting Started
+
+Follow the steps below to get the project up and running on your local machine.
+
+### 1. **Clone the Repository**
+```bash
+git clone https://github.com/Pathfinder-Cavista/pathfinder.git
+cd pathfinder
+git switch web
+```
+
+### 2. Install Dependencies
+
+Make sure you have Node.js and Angular CLI installed.
+
+```bash
+npm install
+```
+
+### 3. Run the Application
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Then open your browser and go to:
 
-## Code scaffolding
+http://localhost:4200
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
-```bash
-ng generate component component-name
-```
+## 🚧 Further Improvements
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Here are some planned enhancements to expand the functionality of the application:
 
-```bash
-ng generate --help
-```
+- 👤 **Applicant Management**
+  - View applicants associated with each job role
+  - Filter applicants by status, experience, and application date
+  - View detailed applicant profiles
 
-## Building
+- 🗓️ **Interview Scheduling**
+  - Schedule interviews for shortlisted candidates
+  - Send interview invitations via email
+  - Display upcoming interviews on the dashboard
 
-To build the project run:
+- 🔔 **Notification System**
+  - Email or in-app alerts for new applications or interview reminders
+  - Status updates for application progress
 
-```bash
-ng build
-```
+- 📊 **Advanced Reporting**
+  - Export reports in PDF/CSV format
+  - Filter charts by date range, role, or department
+  - Add KPIs like time-to-hire, application conversion rates
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- 🔐 **Authentication and Role-Based Access**
+  - Secure login system for recruiters and hiring managers
+  - Different permissions for managers, directors, and HR staff
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
