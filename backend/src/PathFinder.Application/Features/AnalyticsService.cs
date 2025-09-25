@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Hangfire;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Http;
@@ -201,7 +202,7 @@ namespace PathFinder.Application.Features
                 };
 
                 await _repository.Dataload.AddReportAsync(report);
-                BackgroundJob.Enqueue(() => RunMetricsReportAsync(report.Id, null!));
+                BackgroundJob.Enqueue(() => RunMetricsReportAsync(report.Id, currentYear, null!));
                 return new OkResponse<string>($"Analytics report generation started. You'll be notified once completed");
             }
             catch (Exception)
@@ -211,7 +212,7 @@ namespace PathFinder.Application.Features
             }
         }
 
-        public async Task RunMetricsReportAsync(Guid reportId, PerformContext context)
+        public async Task RunMetricsReportAsync(Guid reportId, int year, PerformContext context)
         {
             var report = await _repository.Dataload.GetReportAsync(r => r.Id == reportId) ?? 
                 throw new ArgumentNullException(nameof(Report));
@@ -219,43 +220,10 @@ namespace PathFinder.Application.Features
             try
             {
                 ExcelPackage.License.SetNonCommercialOrganization("Axxess");
-                var year = DateTime.Now.Year;
-                var appByLoc = await GetApplicationOvertimeAsync(year);
-
+                
                 using var package = new ExcelPackage();
-                var sheet = package.Workbook.Worksheets.Add("ApplicationTrend");
-
-                //Headers
-                sheet.Cells[1, 1].Value = "Month";
-                sheet.Cells[1, 2].Value = "No. of Applications";
-                using (var range = sheet.Cells[1, 1, 1, 2])
-                {
-                    range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                    range.Style.Fill.BackgroundColor.SetColor(Color.DarkGray);
-                    range.Style.Font.Color.SetColor(Color.Black);
-                    range.Style.Font.Bold = true;
-                    range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                }
-
-                for (int i = 0; i < appByLoc.Count; i++)
-                {
-                    sheet.Cells[i + 2, 1].Value = appByLoc[i].Month;
-                    sheet.Cells[i + 2, 2].Value = appByLoc[i].Applications;
-                }
-
-                sheet.Cells[sheet.Dimension.Address].AutoFitColumns();
-
-                // Add Charts
-                var chart = sheet.Drawings.AddChart("ApplicationChart", eChartType.ColumnClustered);
-                chart.Title.Text = $"Application Trend {year}";
-                chart.SetPosition(1, 0, 3, 0);
-                chart.SetSize(600, 400);
-
-                var series = chart.Series.Add(sheet.Cells[2, 2, appByLoc.Count + 1, 2],
-                                              sheet.Cells[2, 1, appByLoc.Count + 1, 1]);
-
-                series.Header = "Applications";
-
+                await RunApplicationTrendReportAsync(package, year);
+                
                 var stream = new MemoryStream();
                 await package.SaveAsAsync(stream);
                 stream.Position = 0;
@@ -288,6 +256,59 @@ namespace PathFinder.Application.Features
             }
         }
         #region Private Methods
+        private async Task RunApplicationTrendReportAsync(ExcelPackage package, int year)
+        {
+            var records = await GetApplicationOvertimeAsync(year);
+            var sheet = package.Workbook.Worksheets.Add("Application Trend");
+
+            int headerRow = 1;
+            int dataRowStart = 2;
+            //Headers
+            var headers = new string[] { "Month", "No. of Applications" };
+            for (int i = 1; i <= headers.Length; i++)
+            {
+                sheet.Cells[headerRow, i].Value = headers[i - 1];
+            }
+            
+            using (var range = sheet.Cells[headerRow, 1, headerRow, 2])
+            {
+                range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(Color.DarkGray);
+                range.Style.Font.Color.SetColor(Color.Black);
+                range.Style.Font.Bold = true;
+                range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            }
+
+            var row = dataRowStart;
+            foreach(var record in records)
+            {
+                sheet.Cells[row, 1].Value = record.Month;
+                sheet.Cells[row, 2].Value = record.Applications;
+                row++;
+            }
+
+            sheet.Cells[sheet.Dimension.Address].AutoFitColumns();
+
+            //// Add Charts
+            var chart = sheet.Drawings.AddChart("ApplicationTrendChart", eChartType.ColumnClustered) as ExcelBarChart;
+            if(chart != null)
+            {
+                chart.Title.Text = $"Application Trend {year}";
+                chart.SetPosition(dataRowStart - 1, 0, 3, 0);
+                chart.SetSize(600, 400);
+
+                var nameRange = sheet.Cells[dataRowStart, 1, dataRowStart + records.Count - 1, 1];
+                var valueRange = sheet.Cells[dataRowStart, 2, dataRowStart + records.Count - 1, 2];
+
+                chart.Series.Add(valueRange, nameRange);
+                chart.Series[0].Header = "Count";
+                chart.Legend.Remove();
+
+                chart.DataLabel.ShowValue = true;
+                chart.YAxis.Title.Text = "Number of Candidates";
+            }
+
+        }
         private ReportDto MapToDto(Report report)
         {
             return new ReportDto
