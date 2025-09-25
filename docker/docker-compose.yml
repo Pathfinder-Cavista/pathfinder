@@ -10,34 +10,21 @@ services:
       - "5005:8080"
       - "5006:8081"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=PathFinderApiDb;Username=appuser;Password=YRaUUR76!Whst5qaPO;
-      - HangfireSettings__Password=JA5p3r!25
-      - HangfireSettings__UserName=hf-admin
-      - JwtSettings__PrivateKey=d54098cbQ8eb5R4a53S8498T5004611355bd
-      - JwtSettings__Issuer=http://localhost:5005
-      - JwtSettings__Audience=pathfinder-talent-data-tracker
-      - JwtSettings__Expires=1
+      - ASPNETCORE_ENVIRONMENT=environmentname
+      - ConnectionStrings__DefaultConnection=connectionstring
+      - HangfireSettings__Password=dashboardpassword
+      - HangfireSettings__UserName=dashboardusername
+      - JwtSettings__PrivateKey=jwtsecretkey
+      - JwtSettings__Issuer=jwtissuer
+      - JwtSettings__Audience=jwtaudience
+      - JwtSettings__Expires=jwtexpirationinhours
       - Cloudinary__ApiKey=placeholder
       - Cloudinary__CloudName=placeholder
       - Cloudinary__Secret=placeholder
+      - Analytics__Header=placeholder
+      - Analytics__Value=placeholder
     depends_on:
-      - db
-    networks:
-      - webnet
-
-  db:
-    image: mysql:8.0
-    container_name: pathfinder-db
-    environment:
-      - MYSQL_ROOT_PASSWORD=YRaUUR76!Whst5qaPO
-      - MYSQL_DATABASE=PathFinderApiDb
-      - MYSQL_USER=appuser
-      - MYSQL_PASSWORD=YRaUUR76!Whst5qaPO
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres
     networks:
       - webnet
 
@@ -55,25 +42,8 @@ services:
     networks:
       - webnet
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: pathfinder-grafana
-    environment:
-      - GF_INSTALL_PLUGINS=marcusolsson-json-datasource
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-storage:/var/lib/grafana
-    restart: unless-stopped
-    networks:
-      - webnet
-
 volumes:
-  mysql-data:
   pgdata:
-  grafana-storage:
 
 
 networks:
