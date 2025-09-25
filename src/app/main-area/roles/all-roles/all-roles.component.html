@@ -1,3 +1,11 @@
+<!-- loader -->
+@if(isLoading)
+{
+<div class="loader-overlay">
+  <div class="spinner"></div>
+</div>
+}
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-12">
@@ -8,6 +16,8 @@
           </div>
         </div>
         <div class="iq-card-body">
+          @if (pagedRoles)
+          {
           <div class="table-responsive">
             <div class="row justify-content-between">
               <div class="col-sm-12 col-md-6">
@@ -15,20 +25,25 @@
                   <form class="mr-3 position-relative">
                     <div class="form-group mb-0">
                       <input type="search" class="form-control" id="exampleInputSearch" placeholder="Search"
-                        aria-controls="user-list-table">
+                        autocomplete="off" aria-controls="user-list-table" name="search" [(ngModel)]="searchPhrase"
+                        (keydown.enter)="searchRole()">
+                      @if (searchPhrase.length > 1)
+                      {
+                      <small>press enter to start search</small>
+                      }
                     </div>
                   </form>
                 </div>
               </div>
               <div class="col-sm-12 col-md-6">
                 <div class="user-list-files d-flex float-right">
-                  <a class="iq-bg-primary" href="javascript:void();">
+                  <a class="iq-bg-primary">
                     Print
                   </a>
-                  <a class="iq-bg-primary" href="javascript:void();">
+                  <a class="iq-bg-primary">
                     Excel
                   </a>
-                  <a class="iq-bg-primary" href="javascript:void();">
+                  <a class="iq-bg-primary">
                     Pdf
                   </a>
                 </div>
@@ -50,10 +65,12 @@
                 </tr>
               </thead>
               <tbody>
-                @for (role of pagedRoles?.items; track role.id)
+                @for (role of pagedRoles.items; track $index)
                 {
                 <tr>
-                  <td class="text-center">{{ $index + 1 }}</td>
+                  <td class="text-center">
+                    {{ ((pagingParams.size * (pagedRoles.currentPage - 1)) + $index) + 1 }}
+                  </td>
                   <td>{{ role.title }}</td>
                   <td>{{ role.type }}</td>
                   <td>{{ role.level }}</td>
@@ -63,12 +80,12 @@
                   <td>{{ role.deadLine | date }}</td>
                   <td>
                     <div class="flex align-items-center list-user-action">
-                      <a class="iq-bg-primary" data-toggle="tooltip" data-placement="top" title=""
-                        data-original-title="Add" href="#"><i class="ri-user-add-line"></i></a>
-                      <a class="iq-bg-primary" data-toggle="tooltip" data-placement="top" title=""
-                        data-original-title="Edit" href="#"><i class="ri-pencil-line"></i></a>
-                      <a class="iq-bg-primary" data-toggle="tooltip" data-placement="top" title=""
-                        data-original-title="Delete" href="#"><i class="ri-delete-bin-line"></i></a>
+                      <a class="iq-bg-primary-light" data-toggle="tooltip" data-placement="top" title=""
+                        data-original-title="Details"><i class="ri-information-line"></i></a>
+                      <a class="iq-bg-primary-ligh" data-toggle="tooltip" data-placement="top" title=""
+                        data-original-title="Applicants"><i class="ri-group-line"></i></a>
+                      <!-- <a class="iq-bg-primary" data-toggle="tooltip" data-placement="top" title=""
+                        data-original-title="Delete" href="#"><i class="ri-delete-bin-line"></i></a> -->
                     </div>
                   </td>
                 </tr>
@@ -78,24 +95,35 @@
           </div>
           <div class="row justify-content-between mt-3">
             <div id="user-list-page-info" class="col-md-6">
-              <span>Showing 1 to 5 of 5 entries</span>
+              <span>
+                Showing
+                {{ ((pagedRoles.currentPage - 1) * pagingParams.size) + 1 }} to
+                {{ (pagedRoles.currentPage * pagingParams.size > pagedRoles.itemCount) ? pagedRoles.itemCount :
+                ((pagedRoles.currentPage) * pagingParams.size)}}
+                of {{ pagedRoles.itemCount }} entries</span>
             </div>
             <div class="col-md-6">
               <nav aria-label="Page navigation example">
                 <ul class="pagination justify-content-end mb-0">
-                  <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                  <li class="page-item pointer"
+                    [ngClass]="(!pagedRoles.hasPrevious) ? 'disabled disabled-pointer' : ''">
+                    <a class="page-link" (click)="updatePage(pagedRoles.currentPage - 1)" tabindex="-1"
+                      aria-disabled="true">Previous</a>
                   </li>
-                  <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item"><a class="page-link" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li class="page-item">
-                    <a class="page-link" href="#">Next</a>
+                  @for(page of pageRange; track $index)
+                  {
+                  <li class="page-item pointer" [ngClass]="((page + 1) === pagedRoles.currentPage) ? 'active' : ''">
+                    <a class="page-link" (click)="updatePage(page + 1)">{{ page + 1 }}</a>
+                  </li>
+                  }
+                  <li class="page-item pointer" [ngClass]="(!pagedRoles.hasNext) ? 'disabled' : ''">
+                    <a class="page-link" (click)="updatePage(pagedRoles.currentPage + 1)">Next</a>
                   </li>
                 </ul>
               </nav>
             </div>
           </div>
+          }
         </div>
       </div>
     </div>
