@@ -34,7 +34,7 @@ namespace PathFinder.Application.Features
                 => new DataloadService(userManager, contextAccessor, eligibility, repository));
 
             _analyticsService = new Lazy<IAnalyticsService>(()
-                => new AnalyticsService(repository));
+                => new AnalyticsService(repository, contextAccessor, userManager, uploadService));
 
             _holidayService = new Lazy<IHolidayService>(()
                 => new HolidayService(repository));

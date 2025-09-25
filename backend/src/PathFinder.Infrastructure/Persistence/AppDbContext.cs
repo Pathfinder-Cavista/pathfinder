@@ -18,6 +18,7 @@ namespace PathFinder.Infrastructure.Persistence
         public DbSet<JobRequirement> JobRequirements { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<Holiday> Holidays { get; set; }
+        public DbSet<Report> Reports { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) 
             : base(options) { }
