@@ -27,6 +27,13 @@ export class RoleService {
     return this.http.get<ApiResponseModel<PagedResponseModel<RoleDetailsModel>>>(`${this._apiBaseUrl}/api/jobs`, { params });
   }
 
+  recentRoles() {
+    let params = new HttpParams();
+    params = params.append('size', 5);
+    
+    return this.http.get<ApiResponseModel<PagedResponseModel<RoleDetailsModel>>>(`${this._apiBaseUrl}/api/jobs`, { params });
+  }
+
   addRole(details: {}) {
     return this.http.post<ApiResponseModel<any>>(`${this._apiBaseUrl}/api/jobs`, details);
   }
