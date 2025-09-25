@@ -1,33 +1,127 @@
-# Path Finder - Cavista Tech. Talent Data Tracker
+![Docker Image Version](https://img.shields.io/docker/v/blueclikk/pathfinder-api?sort=semver&label=version)
+![Docker Pulls](https://img.shields.io/docker/pulls/blueclikk/pathfinder-api)
 
-This is a lightweight application to automate the tracking of open roles, calculate the number of days they have remain open and integrate the data into dashboards for real-time insights
+# Pathfinder - Talent Data Tracker
 
----
+Talent Data Tracker is a hackathon project built to help talent teams monitor and analyze the recruitment process.
+The system provides insights into how long it takes for roles to be filled, tracks application trends, and generates actionable reports.
 
-## Running the App
+## Team Members
 
-From the `docker` directory (where the `docker-compose.yml` file is located), run:
+- Chukwudi Ike-nwako – Frontend & UI
+- Folusho Onafowokan - Product Coordinator
+- Shalom Gar - Backend
+- Osehiase Ehilen - Mobile (Android)
+- Toba Ojo - Backend
+
+## Tech Stack
+
+- Backend: .NET 8 Web API
+- Frontend: Angular
+- Background Jobs: Hangfire
+- Database: PostgreSQL
+- Excel Export: EPPlus
+- File Uploads: Cloudinary
+- Authentication: JWT + Custom API Key
+- Dashboard: Hangfire Dashboard with Basic Auth
+- Containerization: Docker & Docker Compose
+
+## Setup Instructions
+
+### Prerequisites
+
+- .NET 8 SDK
+- Docker & Docker Compose
+- PostgreSQL (optional if not using Docker)
+- Cloudinary account for file uploads
+
+### Steps
+
+- Clone the repository:
 
 ```bash
-docker-compose up -d db
+git clone https://github.com/Pathfinder-Cavista/pathfinder.git
+cd pathfinder
 ```
 
-Then run other services, e.g:
+### Configure environment variables:
 
+- Create a .env file in **pathfinder/docker** with variables like:
+
+ConnectionStrings\_\_DefaultConnection=connectionstring
+HangfireSettings\_\_Password=dashboardpassword
+HangfireSettings\_\_UserName=dashboardusername
+JwtSettings\_\_PrivateKey=jwt_signing_key
+JwtSettings\_\_Issuer=jwt_issuer
+JwtSettings\_\_Audience=jwt_audience
+JwtSettings\_\_Expires=expiration_in_hours
+Cloudinary\_\_ApiKey=cloudinary_apikey
+Cloudinary\_\_CloudName=cloudinary_cloudname
+Cloudinary\_\_Secret=cloudinary_secret
+Analytics\_\_Header=custom_header_name
+Analytics\_\_Value=custom_header_value
+
+### Start services via Docker Compose:
+
+```bash
+cd approot/docker
+docker-compose up -d
 ```
-docker-compose up --build api
-```
 
-This will:
+### Access API on:
 
-- First build the Database image and ensure it is fully initialized.
-- Build the the image of the backend API
-- Start the Database and the API services defined in the `docker-compose.yml`
-
-## Accessing the Service
-
-- Once running, the API service will be available at:
-
-```
+```bash
 http://localhost:5005
 ```
+
+### Access Hangfire Dashboard (with basic auth credentials set in environment variables):
+
+```bash
+http://localhost:5005/admin/jobs
+```
+
+## Features & Implementation
+
+### Role Tracking & Insights
+
+- Tracks how long roles remain open from posting to hire.
+- Records application timestamps to calculate trends and averages.
+
+### Excel Reports
+
+- Generates downloadable Excel reports using EPPlus.
+- Includes insights like role fill times, application trends, and candidate statistics.
+
+### File & Photo Uploads
+
+- Talent-related files and candidate photos uploaded and stored via Cloudinary.
+- Supports direct upload via API endpoints.
+
+### Authentication
+
+- JWT for user authentication.
+- Custom API keys for analytics enpoints and automated service access.
+- Secures Hangfire Dashboard with Basic Auth.
+
+### API
+
+- Full API documentation is generated from Swagger JSON.
+
+Swagger UI: http://localhost:5005/swagger/index.html
+
+## Endpoints include:
+
+- Registration and Login
+- Candidate application tracking
+- File uploads
+- Excel report generation
+
+## Project Github Branches
+
+- Backend: main
+- Frontend: web
+- Mobile: feature-Mobile-Recruitment-Tracker
+
+## License
+
+MIT License
