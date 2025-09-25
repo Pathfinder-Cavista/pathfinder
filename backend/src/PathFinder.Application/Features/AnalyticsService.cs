@@ -1,5 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Hangfire;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Http;
@@ -62,6 +61,8 @@ namespace PathFinder.Application.Features
                 RoleTitle = j.Title,
                 Status = j.Status,
                 StatusText = j.Status.GetDescription(),
+                OpenDate = j.CreatedAt,
+                ClosedDate = j.ClosingDate,
                 OpenDays = GetBusinessDays(j.CreatedAt, j.ClosingDate ?? DateTime.Today, holidays)
             }).ToList();
 
@@ -222,6 +223,7 @@ namespace PathFinder.Application.Features
                 ExcelPackage.License.SetNonCommercialOrganization("Axxess");
                 
                 using var package = new ExcelPackage();
+                await RunOpenRolesDurationReportAsync(package, year);
                 await RunApplicationTrendReportAsync(package, year);
                 
                 var stream = new MemoryStream();
@@ -255,6 +257,7 @@ namespace PathFinder.Application.Features
                 throw;
             }
         }
+
         #region Private Methods
         private async Task RunApplicationTrendReportAsync(ExcelPackage package, int year)
         {
@@ -309,6 +312,99 @@ namespace PathFinder.Application.Features
             }
 
         }
+
+        private async Task<byte[]> RunOpenRolesDurationReportAsync(ExcelPackage package, int year)
+        {
+            var records = await GetOpenRoleDurationAsync(year);
+
+            var sheet = package.Workbook.Worksheets.Add("Role Heatmap");
+            //================Report Explanation Headers======================
+            sheet.Cells[1, 1].Value = "Hiring Roles Open Report";
+            sheet.Cells[1, 1].Style.Font.Size = 16;
+            sheet.Cells[1, 1].Style.Font.Bold = true;
+
+            sheet.Cells[3, 1].Value = "This report shows how long job roles remain open each month";
+            sheet.Cells[4, 1].Value = "Darker cells in the heatmap = longer time open (more bottlenecks).";
+            sheet.Cells[5, 1].Value = "Use this to track hiring efficiency and spot problem areas";
+            sheet.Cells[3, 1, 5, 1].Style.Font.Italic = true;
+
+            int startRow = 7;
+            sheet.Cells[startRow, 1].Value = "Role Title";
+            var months = Enumerable.Range(1, 12)
+                .Select(m => new DateTime(year, m, 1).ToString("MMM"))
+                .ToList();
+
+            for (int i = 0; i < months.Count; i++)
+            {
+                sheet.Cells[startRow, i + 2].Value = months[i];
+            }
+
+            int row = startRow + 1;
+            foreach(var role in records)
+            {
+                sheet.Cells[row, 1].Value = role.Key;
+                foreach( var month in role.Value)
+                {
+                    int col = month.Key + 1;
+                    sheet.Cells[row, col].Value = month.Value;
+                }
+
+                row++;
+            }
+
+            // Conditional formatting for heatmap
+            var dataRange = sheet.Cells[startRow + 1, 2, row - 1, months.Count + 1];
+            var condition = dataRange.ConditionalFormatting.AddThreeColorScale();
+            condition.LowValue.Color = Color.LightGreen;
+            condition.MiddleValue.Color = Color.Yellow;
+            condition.HighValue.Color = Color.Red;
+
+            // Styling
+            using(var range = sheet.Cells[1, 1, startRow, months.Count + 1])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(Color.DarkGray);
+            }
+
+            sheet.Cells[sheet.Dimension.Address].AutoFitColumns();
+
+            return await package.GetAsByteArrayAsync();
+        }
+
+        private async Task<Dictionary<string, Dictionary<int, int>>> GetOpenRoleDurationAsync(int year)
+        {
+            var holidays = (await _repository.Holiday
+                .AsQueryable(h => !h.IsDeprecated)
+                .ToListAsync())
+                .Select(h => h.IsRecurring ?
+                    new DateTime(DateTime.Today.Year, h.Date.Month, h.Date.Day) :
+                    h.Date.Date).ToHashSet();
+
+            var jobs = await _repository.Job
+                .GetQueryable(j => !j.IsDeprecated && j.CreatedAt.Year == year && (j.Status == JobStatus.Published || j.Status == JobStatus.Closed))
+                .Select(j => new { j.Id, j.Title, j.CreatedAt, j.ClosingDate, j.Status })
+                .ToListAsync();
+
+            var result = jobs.Select(j => new OpenRoleDurationDto
+            {
+                RoleId = j.Id,
+                RoleTitle = j.Title,
+                Status = j.Status,
+                StatusText = j.Status.GetDescription(),
+                OpenDate = j.CreatedAt,
+                ClosedDate = j.ClosingDate,
+                OpenDays = GetBusinessDays(j.CreatedAt, j.ClosingDate ?? DateTime.Today, holidays)
+            }).ToList();
+
+            var groupedData = result.Where(r => r.Status == JobStatus.Closed && r.ClosedDate.HasValue)
+               .GroupBy(r => r.RoleTitle)
+               .ToDictionary(grp => grp.Key, grp => grp.GroupBy(r => r.OpenDate.Month)
+                                                       .ToDictionary(m => m.Key, m => m.Sum(d => d.OpenDays)));
+
+            return groupedData;
+        }
+
         private ReportDto MapToDto(Report report)
         {
             return new ReportDto

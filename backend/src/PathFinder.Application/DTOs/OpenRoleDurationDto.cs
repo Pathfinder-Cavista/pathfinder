@@ -9,5 +9,7 @@ namespace PathFinder.Application.DTOs
         public JobStatus Status { get; set; }
         public string StatusText { get; set; } = string.Empty;
         public int OpenDays { get; set; }
+        public DateTime OpenDate { get; set; }
+        public DateTime? ClosedDate { get; set; }
     }
 }
