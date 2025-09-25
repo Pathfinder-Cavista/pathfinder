@@ -17,6 +17,11 @@ export const routes: Routes = [
         title: 'Roles | Path Finder'
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./report/report.component').then(c => c.ReportComponent),
+        title: 'Reports | Path Finder'
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'
