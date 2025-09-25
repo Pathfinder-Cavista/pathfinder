@@ -7,7 +7,7 @@ import * as am4core from '@amcharts/amcharts4/core';
 import * as am4maps from '@amcharts/amcharts4/maps';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import am4geodata_worldLow from '@amcharts/amcharts4-geodata/worldLow';
-import { ApplicationsByLocationResponse } from '../../../models/analysis/analysis.model';
+import { ApplicationsByLocationResponseModel } from '../../../models/analysis/analysis.model';
 import { RouterLink } from '@angular/router';
 import { RoleService } from '../../../generated/services/role/role.service';
 import { RoleDetailsModel } from '../../../models/roles/role.model';
@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   protected totalRoles: number = 0;
   protected openRoles: number = 0;
   protected closedRoles: number = 0;
-  protected applicationByLocation: ApplicationsByLocationResponse[] = [];
+  protected applicationByLocation: ApplicationsByLocationResponseModel[] = [];
   protected recentRoles: RoleDetailsModel[] = [];
   private unsubscribe: Subscription[] = [];
 
